@@ -4,7 +4,7 @@ import FinanceiroTabela from "@/components/Financas/FinanceiroTabela"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
 import ModalVenda from "@/components/Financas/ModalVenda"
 
-export default function Receitas() {
+export default function Estoque() {
 
   const [open, setOpen] = useState(false)
 
@@ -63,7 +63,7 @@ export default function Receitas() {
   return (
     <div className="p-6">
       <h1 className="text-4xl font-bold mb-6">
-        Receitas
+        Estoque
       </h1>
       
       <FinanceiroCards cards={cards} />

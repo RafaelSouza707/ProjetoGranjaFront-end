@@ -17,6 +17,7 @@ import {
   cilViewQuilt,
   cilFactory,
   cilWallet,
+  cilStorage,
 } from '@coreui/icons'
 
 export default function Sidebar({ visible, setVisible, isMobile }) {
@@ -60,6 +61,13 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
           </NavLink>
         </CNavItem>
 
+        <CNavItem>
+          <NavLink to="/estoque" className={navLinkClass}>
+            <CIcon customClassName="nav-icon" icon={cilStorage} />
+            Estoque
+          </NavLink>
+        </CNavItem>
+
         <CNavGroup
           toggler={
             <>
@@ -91,13 +99,6 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
           <NavLink to="/equipe" className={navLinkClass}>
             <CIcon customClassName="nav-icon" icon={cilPeople} />
             Equipe
-          </NavLink>
-        </CNavItem>
-
-        <CNavItem>
-          <NavLink to="/relatoriosvacinas" className={navLinkClass}>
-            <CIcon customClassName="nav-icon" icon={cilLayers} />
-            Relatório Vacinas
           </NavLink>
         </CNavItem>
       </CSidebarNav>

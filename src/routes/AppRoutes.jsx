@@ -7,8 +7,7 @@ import Despesas from '../pages/Despesas';
 import Equipe from '../pages/Equipe';
 import Producao from '../pages/Producao';
 import Receitas from '../pages/Receitas';
-import RelatoriosVacinas from '../pages/RelatoriosVacinas'
-
+import Estoque from '../pages/Estoque';
 
 export default function AppRoutes() {
   return (
@@ -22,7 +21,7 @@ export default function AppRoutes() {
           <Route path='equipe' element={<Equipe/> } />
           <Route path='producao' element={<Producao/>} />
           <Route path='receitas' element={<Receitas/>} />
-          <Route path='relatoriosvacinas' element={<RelatoriosVacinas/>} />
+          <Route path='estoque' element={<Estoque/>}/>
         </Route>
       </Routes>
     </BrowserRouter>

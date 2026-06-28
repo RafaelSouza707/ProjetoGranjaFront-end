@@ -1,19 +1,36 @@
 import { useState } from "react"
 
-import FinanceiroTabela from "@/components/Financas/FinanceiroTabela"
+import FinanceiroTabela from "@/components/Genericos/Tabela"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
-import ModalVenda from "@/components/Financas/ModalVenda"
+import ModalForm from "@/components/Genericos/ModalForm"
 
 export default function Estoque() {
 
-  const [open, setOpen] = useState(false)
+  const colunas = [
+    {
+      key: "id",
+      label: "#",
+    },
+    {
+      key: "tipo",
+      label: "Tipo",
+    },
+    {
+      key: "unidade_medida",
+      label: "Unidade de Medida",
+    },
+    {
+      key: "quantidade_produto",
+      label: "Quantidde",
+    },
+  ]
 
   const vendas = [
     {
       id: "1",
-      cliente: "Rafael",
-      data_venda: "01-06-2000",
-      valor_total: "200,00"
+      tipo: "Ovo",
+      unidade_medida: "Grande",
+      quantidade_produto: "200"
     }
   ]
 
@@ -37,24 +54,36 @@ export default function Estoque() {
     },
   ]
 
-  const colunas = [
+
+  const camposVenda = [
     {
-      key: "id",
-      label: "#",
-    },
-    {
-      key: "cliente",
+      name: "cliente_id",
       label: "Cliente",
     },
     {
-      key: "data_venda",
+      name: "data_venda",
       label: "Data",
+      type: "date",
     },
-    {
-      key: "valor_total",
-      label: "Valor",
+    { 
+      name: "valor_total",
+      label: "Valor Total",
     },
   ]
+
+  const [open, setOpen] = useState(false)
+
+  const [vendaSelecionada, setVendaSelecionada] = useState(null)
+
+  function novaVenda() {
+    setVendaSelecionada(null)
+    setOpen(true)
+  }
+
+  function editarVenda(venda) {
+    setVendaSelecionada(venda)
+    setOpen(true)
+  }
 
   function salvarVenda(payload) {
     console.log(payload)
@@ -65,7 +94,7 @@ export default function Estoque() {
       <h1 className="text-4xl font-bold mb-6">
         Estoque
       </h1>
-      
+    
       <FinanceiroCards cards={cards} />
 
       <FinanceiroTabela
@@ -73,15 +102,23 @@ export default function Estoque() {
         colunas={colunas}
         placeholderBusca="Buscar venda..."
         textoBotao="+ Nova Venda"
-        onNovo={() => setOpen(true)}
+        onNovo={novaVenda}
+        onEditar={editarVenda}
+        onExcluir={ (item) => console.log("Excluir", item) }
       />
 
-      <ModalVenda
+      <ModalForm
         open={open}
         onOpenChange={setOpen}
+        titulo={
+          vendaSelecionada
+            ? "Editar Venda"
+            : "Nova Venda"
+        }
+        campos={camposVenda}
+        dadosIniciais={vendaSelecionada}
         onSalvar={salvarVenda}
       />
-
     </div>
   )
 }

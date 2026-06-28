@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import FinanceiroTabela from "@/components/Financas/FinanceiroTabela"
+import FinanceiroTabela from "@/components/Genericos/Tabela"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
 import ModalDespesa from "@/components/Financas/ModalDespesa"
 

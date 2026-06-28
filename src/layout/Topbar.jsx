@@ -1,43 +1,69 @@
-import { CNavbar, CContainer, CDropdown, CDropdownToggle, CDropdownMenu, CDropdownItem, CAvatar, CButton } from '@coreui/react';
-import CIcon from '@coreui/icons-react'
-import { cilUser } from '@coreui/icons'
+import {
+  CNavbar,
+  CContainer,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
+  CAvatar,
+  CButton
+} from "@coreui/react"
 
-export default function Topbar({ setVisible, isMobile }) {
+import CIcon from "@coreui/icons-react"
+import { cilUser } from "@coreui/icons"
+import { useNavigate } from "react-router-dom"
+
+export default function Topbar({
+  setVisible,
+  isMobile,
+  isAuthenticated,
+  userName,
+  onLogin,
+  onLogout,
+}) {
+  const navigate = useNavigate()
+
   return (
     <CNavbar colorScheme="light" className="bg-white px-3">
-
       <CContainer fluid className="d-flex justify-content-between align-items-center">
 
         <div>
-            {isMobile && (
-                <CButton color="light" onClick={() => setVisible(true)}>
-                    ☰
-                </CButton>
-            )}
+          {isMobile && (
+            <CButton color="light" onClick={() => setVisible(true)}>
+              ☰
+            </CButton>
+          )}
         </div>
 
         <div>
+          {isAuthenticated ? (
             <CDropdown alignment="end">
-            <CDropdownToggle color="light" className="d-flex align-items-center gap-2">
-
+              <CDropdownToggle
+                color="light"
+                className="d-flex align-items-center gap-2"
+              >
                 <CAvatar color="primary" textColor="white">
-                <button className="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
-                        style={{ width: '40px', height: '40px' }}>
-                <CIcon icon={cilUser} />
-                </button>
+                  <CIcon icon={cilUser} />
                 </CAvatar>
 
-                <span>Usuário</span>
-            </CDropdownToggle>
+                <span>{userName}</span>
+              </CDropdownToggle>
 
-            <CDropdownMenu>
+              <CDropdownMenu>
                 <CDropdownItem>Perfil</CDropdownItem>
-                <CDropdownItem>Sair</CDropdownItem>
-            </CDropdownMenu>
+                <CDropdownItem onClick={onLogout}>
+                  Sair
+                </CDropdownItem>
+              </CDropdownMenu>
             </CDropdown>
+          ) : (
+            <CButton color="primary" onClick={onLogin}>
+              Login
+            </CButton>
+          )}
         </div>
 
       </CContainer>
     </CNavbar>
-  );
+  )
 }

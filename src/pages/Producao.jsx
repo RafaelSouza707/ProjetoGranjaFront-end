@@ -1,14 +1,31 @@
 import { useState } from "react"
 
-import FinanceiroTabela from "@/components/Financas/FinanceiroTabela"
+import FinanceiroTabela from "@/components/Genericos/Tabela"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
-import ModalVenda from "@/components/Financas/ModalVenda"
+import ModalForm from "@/components/Genericos/ModalForm"
 
 export default function Producao() {
 
-  const [open, setOpen] = useState(false)
+  const colunas = [
+    {
+      key: "id",
+      label: "#",
+    },
+    {
+      key: "tipo",
+      label: "Tipo",
+    },
+    {
+      key: "data",
+      label: "Data",
+    },
+    {
+      key: "valor_total",
+      label: "Valor",
+    },
+  ]
 
-  const vendas = [
+  const producoes = [
     {
       id: "1",
       tipo: "Venda",
@@ -45,52 +62,79 @@ export default function Producao() {
     },
   ]
 
-  const colunas = [
+  const camposProducao = [
     {
-      key: "id",
-      label: "#",
+      name: "lote_frango_id",
+      label: "Lote Produtor"
     },
     {
-      key: "tipo",
-      label: "Tipo",
+      name: "produto_id",
+      label: "Produto",
     },
     {
-      key: "data",
-      label: "Data",
+      name: "quantidade",
+      label: "Quantidade",
     },
     {
-      key: "valor_total",
-      label: "Valor",
+      name: "dt_producao",
+      label: "Data de Produção"
     },
+    {
+      name: "observacao",
+      label: "Observação"
+    }
   ]
 
-  function salvarVenda(payload) {
+  const [open, setOpen] = useState(false)
+
+  const [producaoSelecionada, setProducaoSelecionada] = useState(null)
+
+  function novaProducao() {
+    setProducaoSelecionada(null)
+    setOpen(true)
+  }
+
+  function editarProducao(venda) {
+    setProducaoSelecionada(venda)
+    setOpen(true)
+  }
+
+  function salvarProducao(payload) {
     console.log(payload)
   }
 
   return (
     <div className="p-6">
 
-      <h1 className="text-4xl font-bold mb-6" style={{marginBottom:`40px`}}>
+      <h1 className="text-4xl font-bold mb-6">
         Produção
       </h1>
 
       <FinanceiroCards cards={cards} />
 
       <FinanceiroTabela
-        dados={vendas}
+        dados={producoes}
         colunas={colunas}
-        placeholderBusca="Buscar venda..."
-        textoBotao="+ Nova Venda"
-        onNovo={() => setOpen(true)}
+        placeholderBusca="Buscar produção..."
+        textoBotao="+ Inserir Produção"
+        onNovo={novaProducao}
+        onEditar={editarProducao}
+        onExcluir={ (item) => console.log("Excluir", item) }
       />
-
-      <ModalVenda
+      
+      <ModalForm
         open={open}
         onOpenChange={setOpen}
-        onSalvar={salvarVenda}
+        titulo={
+          producaoSelecionada
+            ? "Editar Produção"
+            : "Inserir produção"
+        }
+        campos={camposProducao}
+        dadosIniciais={producaoSelecionada}
+        onSalvar={salvarProducao}
       />
-
+      
     </div>
   )
 }

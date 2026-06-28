@@ -13,12 +13,13 @@ import { NavLink, Link } from 'react-router-dom'
 import CIcon from '@coreui/icons-react'
 import {
   cilPeople,
-  cilLayers,
+  cilSettings,
   cilViewQuilt,
   cilFactory,
   cilWallet,
   cilStorage,
 } from '@coreui/icons'
+
 
 export default function Sidebar({ visible, setVisible, isMobile }) {
   const navLinkClass = ({ isActive }) =>
@@ -50,7 +51,7 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
         <CNavItem>
           <NavLink to="/" className={navLinkClass} end>
             <CIcon customClassName="nav-icon" icon={cilViewQuilt} />
-            Visão Geral
+            Granjas
           </NavLink>
         </CNavItem>
 
@@ -58,6 +59,13 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
           <NavLink to="/producao" className={navLinkClass}>
             <CIcon customClassName="nav-icon" icon={cilFactory} />
             Produção
+          </NavLink>
+        </CNavItem>
+
+        <CNavItem>
+          <NavLink to="/lotes_frangos" className={navLinkClass}>
+            <CIcon customClassName="nav-icon" icon={cilFactory} />
+            Lotes de Frangos
           </NavLink>
         </CNavItem>
 
@@ -99,6 +107,13 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
           <NavLink to="/equipe" className={navLinkClass}>
             <CIcon customClassName="nav-icon" icon={cilPeople} />
             Equipe
+          </NavLink>
+        </CNavItem>
+
+        <CNavItem>
+          <NavLink to="/configuracoes" className={navLinkClass}>
+            <CIcon customClassName="nav-icon" icon={cilSettings} />
+            Configurações
           </NavLink>
         </CNavItem>
       </CSidebarNav>

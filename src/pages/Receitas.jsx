@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import FinanceiroTabela from "@/components/Financas/FinanceiroTabela"
+import Tabela from "@/components/Genericos/Tabela"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
 import ModalVenda from "@/components/Financas/ModalVenda"
 
@@ -68,7 +68,7 @@ export default function Receitas() {
       
       <FinanceiroCards cards={cards} />
 
-      <FinanceiroTabela
+      <Tabela
         dados={vendas}
         colunas={colunas}
         placeholderBusca="Buscar venda..."

@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react"
 import Tabela from "@/components/Genericos/Tabela"
 import ModalForm from "@/components/Genericos/ModalForm"
+import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
+ 
+function CrudSection(props) {
 
-function CrudSection({
-  titulo,
-  listar,
-  criar,
-  atualizar,
-  deletar,
-  colunas,
-  campos
-}) {
+  const {
+    titulo,
+    listar,
+    criar,
+    atualizar,
+    deletar,
+    colunas,
+    campos,
+    granjaId
+  } = props
+
   const [dados, setDados] = useState([])
   const [open, setOpen] = useState(false)
   const [item, setItem] = useState(null)
+
+  const [openDelete, setOpenDelete] = useState(false)
+  const [itemDelete, setItemDelete] = useState(null)
 
   async function carregar() {
     const res = await listar()
@@ -45,8 +53,18 @@ function CrudSection({
     await carregar()
   }
 
-  async function excluir(i) {
-    await deletar(i.id)
+  function excluir(i) {
+    setItemDelete(i)
+    setOpenDelete(true)
+  }
+
+
+  async function confirmarExclusao() {
+    await deletar(itemDelete.id)
+
+    setOpenDelete(false)
+    setItemDelete(null)
+
     await carregar()
   }
 
@@ -59,6 +77,15 @@ function CrudSection({
           Novo
         </button>
       </div>
+
+      <ConfirmDialog
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        onConfirm={confirmarExclusao}
+        titulo={`Excluir ${titulo}`}
+        descricao={`Deseja realmente excluir "${itemDelete?.nome ?? itemDelete?.identificacao ?? itemDelete?.id}"?`}
+        textoConfirmar="Excluir"
+      />
 
       <Tabela
         dados={dados}

@@ -2,6 +2,9 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { TbPaperBag } from "react-icons/tb";
+
+import { CTooltip } from "@coreui/react"
 
 import {
   Card,
@@ -20,6 +23,10 @@ import {
 import {
   Pencil,
   Trash2,
+  Settings,
+  Bird,
+  ClipboardList,
+  DollarSign,
 } from "lucide-react"
 
 function getValue(obj, path) {
@@ -34,6 +41,11 @@ export default function Tabela({
   onNovo,
   onEditar,
   onExcluir,
+  onConfigurar,
+  onTelaLotesFrangos,
+  onProdutos,
+  onFinancas,
+  onLoteRacao,
 }) {
   const [busca, setBusca] = useState("")
 
@@ -141,22 +153,100 @@ export default function Tabela({
 
                 <TableCell>
                   <div className="flex justify-center gap-1">
+                    {onTelaLotesFrangos && (
+                      <CTooltip content="Lote de Frangos">
+                        <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-15 w-15"
+                        onClick={() => onTelaLotesFrangos(item)}
+                        >
+                          <Bird className="h-4 w-4"/>
+                        </Button>
+                      </CTooltip>
+                      )
+                    }
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEditar(item)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    {onProdutos && (
+                      <CTooltip content="Produtos">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-15 w-15"
+                          onClick={() => onProdutos(item)}
+                        >
+                          <ClipboardList className="h-4 w-4" />
+                        </Button>
+                      </CTooltip>
+                    )}
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onExcluir(item)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    {onFinancas && (
+                      <CTooltip content="Finanças">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-15 w-15"
+                          onClick={() => onFinancas(item)}
+                        >
+                          <DollarSign className="h-4 w-4" />
+                        </Button>
+                      </CTooltip>
+                    )}
+
+                    {onLoteRacao && (
+                      <CTooltip content="Lote de Ração">
+                        <Button
+                        variant="ghost"
+                        size="icon"
+                        className={"h-15 w-15"}
+                        onClick={() => onLoteRacao(item)}
+                        >
+                        <TbPaperBag className="h-4 w-4" />
+                        </Button>
+                      </CTooltip>
+                    )}
+
+                    {onEditar && (
+                      <CTooltip content="Editar nome da Granja">
+                        <Button
+                        variant="ghost"
+                          size="icon"
+                          className="h-15 w-15"
+                          onClick={() => onEditar(item)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </CTooltip>
+                    )}
+
+                    {onExcluir && (
+                      <CTooltip content="Excluir">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-15 w-15"
+                          onClick={() => onExcluir(item)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </CTooltip>
+                    )}
+
+
+                    {
+                      onConfigurar && (
+                        <CTooltip content="Configuração">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-15 w-15"
+                            onClick={() => onConfigurar(item)}
+                          >
+                            <Settings className="h-4 w-4"/>
+                          </Button>
+                        </CTooltip>
+                      )
+                    }
 
                   </div>
                 </TableCell>

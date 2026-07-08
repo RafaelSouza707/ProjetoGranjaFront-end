@@ -1,7 +1,7 @@
 import api from "../axios";
 
-export async function listarTipoVenda() {
-    const response = await api.get("/venda_estoque/tipo_venda");
+export async function listarTipoVenda(granjaId) {
+    const response = await api.get(`/venda_estoque/tipo_venda?granja_id=${granjaId}`);
     return response.data;
 }
 
@@ -20,7 +20,7 @@ export async function atualizarTipoVenda(id, data) {
     return resposne.data;
 }
 
-export async function deletarTipoVenda(id) {
-    await api.delete(`/venda_estoque/tipo_venda/${id}`);
+export async function deletarTipoVenda(id, data) {
+    await api.delete(`/venda_estoque/tipo_venda/${id}?granja_id=${data.granja_id}`);
     return "";
 }

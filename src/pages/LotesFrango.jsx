@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 
-import Tabela from "@/components/Genericos/Tabela"
 import CardsGrid from "@/components/Genericos/CardsGrid"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
 import ModalForm from "@/components/Genericos/ModalForm"
+import { useNavigate } from "react-router-dom"
+
+import { useParams } from "react-router-dom"
 
 import {
   listarLoteFrangos,
@@ -14,29 +16,34 @@ import {
 } from "@/api/aviario/loteFrangoService"
 
 import { listarStatusFrango } from "@/api/aviario/statusLoteFrangoService"
+
 import { renderTextoColuna } from "@/components/utils/renderers"
 
 export default function LotesFrango() {
+
+  const navigate = useNavigate()
+
   const [status, setStatus] = useState([])
   const [lotesFrango, setLotesFrango] = useState([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loteSelecionado, setLoteSelecionado] = useState(null)
   const [cardsLoteFrangos, setCardsLoteFrangos] = useState(null)
-  const [statusLoteFrango, setStatusLoteFrango] = useState([])
+
+  const { granjaId } = useParams()
 
   async function carregarStatus() {
-    const dados = await listarStatusFrango()
+    const dados = await listarStatusFrango(granjaId)
     setStatus(dados)
   }
 
   async function carregarLotes() {
-    const dados = await listarLoteFrangos()
+    const dados = await listarLoteFrangos(granjaId)
     setLotesFrango(dados)
   }
 
   async function carregarCards() {
-    const dados = await cardsLoteFrango()
+    const dados = await cardsLoteFrango(granjaId)
     setCardsLoteFrangos(dados)
   }
 
@@ -52,20 +59,9 @@ export default function LotesFrango() {
     }
   }
 
-  const colunas = [
-    { key: "id", label: "#" },
-    { key: "status.nome", label: "STATUS" },
-    { key: "identificacao", label: "IDENTIFICAÇÃO" },
-    { key: "quantidade_inicial", label: "QTD INICIAL" },
-    { key: "data_alojamento", label: "ALOJAMENTO" },
-    { key: "fornecedor", label: "FORNECEDOR" },
-    { key: "quantidade_atual", label: "QTD ATUAL" },
-    {
-      key: "observacao",
-      label: "OBSERVAÇÃO",
-      render: renderTextoColuna("observacao", 10)
-    }
-  ]
+  useEffect(() => {
+    carregarTudo()
+  }, [granjaId])
 
   const campos = [
     {
@@ -122,13 +118,17 @@ export default function LotesFrango() {
   async function salvar(payload) {
     const data = {
       ...payload,
+      granja_id: Number(granjaId),
       status_lote_frango_id: toNumber(payload.status_lote_frango_id),
       quantidade_inicial: toNumber(payload.quantidade_inicial),
       quantidade_atual: toNumber(payload.quantidade_atual)
     }
 
     if (loteSelecionado) {
-      await atualizarLoteFrango(loteSelecionado.id, data)
+      await atualizarLoteFrango(
+        loteSelecionado.id,
+        data
+      )
     } else {
       await criarLoteFrango(data)
     }
@@ -165,10 +165,6 @@ export default function LotesFrango() {
     setOpen(true)
   }
 
-  useEffect(() => {
-    carregarTudo()
-  }, [])
-
   if (loading) {
     return <p>Carregando...</p>
   }
@@ -183,19 +179,20 @@ export default function LotesFrango() {
         cards={[
           {
             titulo: "Total de Aves",
-            valor: cardsLoteFrangos?.total_aves_lote_frango ?? 0,
+            valor: cardsLoteFrangos?.total_aves_granja ?? 0,
             cor: "text-blue-600"
           },
           {
             titulo: "Mortalidade no Mês",
-            valor: cardsLoteFrangos?.mortalidade_lote_frango ?? 0,
+            valor: cardsLoteFrangos?.mortalidade_granja_mes ?? 0,
             cor: "text-red-600"
           },
           {
             titulo: "Lotes com Baixa Quantidade de aves",
-            valor: cardsLoteFrangos?.baixa_quantidade_aves_lote_frango ?? 0,
+            valor:
+              cardsLoteFrangos?.baixa_quantidade_aves_lote_frango ?? 0,
             cor: "text-amber-600"
-          },
+          }
         ]}
       />
 
@@ -205,15 +202,41 @@ export default function LotesFrango() {
         onNovo={novo}
         onEditar={editar}
         onExcluir={excluir}
+        onClickCard={(item) =>
+          navigate(`/granja/${granjaId}/lotes_frangos/${item.id}`)
+        }
         campos={[
-          { key: "status.nome", label: "Status" },
-          { key: "identificacao", label: "Identificação" },
-          { key: "quantidade_atual", label: "Qtd Atual" },
-          { key: "data_alojamento", label: "Alojamento" },
+          {
+            key: "identificacao",
+            label: "Identificação",
+            render: (item) =>
+              item.identificacao.toUpperCase()
+          },
+          {
+            key: "status.nome",
+            label: "Status"
+          },
+          {
+            key: "quantidade_inicial",
+            label: "Qtd Inicial"
+          },
+          {
+            key: "quantidade_atual",
+            label: "Qtd Atual"
+          },
+          {
+            key: "data_alojamento",
+            label: "Alojamento"
+          },
+          {
+            key: "fornecedor",
+            label: "Fornecedor"
+          },
           {
             key: "observacao",
             label: "Obs",
-            render: (item) => item.observacao?.slice(0, 40)
+            render: (item) =>
+              item.observacao?.slice(0, 40)
           }
         ]}
       />
@@ -221,7 +244,11 @@ export default function LotesFrango() {
       <ModalForm
         open={open}
         onOpenChange={setOpen}
-        titulo={loteSelecionado ? "Editar Lote" : "Novo Lote"}
+        titulo={
+          loteSelecionado
+            ? "Editar Lote"
+            : "Novo Lote"
+        }
         campos={campos}
         dadosIniciais={loteSelecionado}
         onSalvar={salvar}

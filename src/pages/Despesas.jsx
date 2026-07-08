@@ -3,15 +3,18 @@ import { useEffect, useState } from "react"
 import Tabela from "@/components/Genericos/Tabela"
 import FinanceiroCards from "@/components/Financas/FinanceiroCards"
 import ModalForm from "@/components/Genericos/ModalForm"
+import { useParams } from "react-router-dom"
 
-import { cardsGastos, listarDespesas, criarDespesa, deletarDespesa, atualizarDespesa, despesaElastica } from "@/api/financas/despesaService"
-import { listarTiposDespesas } from "@/api/financas/tipoDespesaService"
+import { cardsGastosGranja, listarDespesas, criarDespesa, deletarDespesa, atualizarDespesa, despesaElastica } from "@/api/financas/despesaService"
+import { listarTiposDespesa } from "@/api/financas/tipoDespesaService"
 import { formatarMoeda } from "@/utils/formatters"
-import { listarSatus } from "@/api/financas/statusFinancasService"
+import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
 import { listarLoteFrangos } from "@/api/aviario/loteFrangoService"
 import { renderTextoColuna } from "@/components/utils/renderers"
 
 export default function Despesas() {
+
+  const { granjaId } = useParams()
 
   async function carregarDados() {
     await Promise.all([
@@ -39,6 +42,7 @@ export default function Despesas() {
     {
       key: "lote_frango.identificacao",
       label: "lote de frango".toUpperCase(),
+      className: "uppercase"
     },
     {
       key: "data",
@@ -63,7 +67,7 @@ export default function Despesas() {
   const [ loteFrango, setLoteFrango ] = useState([])
   async function carregarLoteFrangos() {
     try {
-      const dados = await listarLoteFrangos();
+      const dados = await listarLoteFrangos(granjaId);
       setLoteFrango(dados);
     } catch (error) {
       console.error(error)
@@ -73,7 +77,7 @@ export default function Despesas() {
   const [status, setStatus] = useState([])
   async function carregarStatus() {
     try {
-      const dados = await listarSatus();
+      const dados = await listarStatusFinancas(granjaId);
       setStatus(dados);
     } catch (error) {
       console.error(error)
@@ -83,14 +87,14 @@ export default function Despesas() {
   const [tipoDespesa, setTipoDespesa] = useState([])
   async function carregarTiposDespesas() {
     try {
-      const dados = await listarTiposDespesas()
+      const dados = await listarTiposDespesa(granjaId)
       setTipoDespesa(dados)
     } catch (error) {
       console.error(error)
     }
   }
 
-  const camposDespesa = [
+  const campos = [
     {
       name: "tipo_despesa_id",
       label: "Tipo de Despesa",
@@ -117,7 +121,7 @@ export default function Despesas() {
         value: l.id,
         label: l.identificacao.toUpperCase()
       })),
-      required: false
+      required: true
     },
     {
       name: "data",
@@ -159,7 +163,7 @@ export default function Despesas() {
   const [cardsDespesas, setCardsDespesas] = useState(null);
   async function carregarCards() {
     try {
-      const dados = await cardsGastos();
+      const dados = await cardsGastosGranja(granjaId);
       setCardsDespesas(dados);
     } catch (error) {
       console.error(error);
@@ -169,13 +173,13 @@ export default function Despesas() {
   }
 
   async function apagarDespesa(id) {
-    await deletarDespesa(id);
+    await deletarDespesa(id, granjaId);
     await carregarDespesas()
     await carregarCards()
   }
   
   async function carregarDespesas() {
-    const dados = await listarDespesas();
+    const dados = await listarDespesas(granjaId);
     setDespesas(dados)
   }
 
@@ -209,12 +213,13 @@ export default function Despesas() {
         tipo_despesa_id: toNumberOrNull(payload.tipo_despesa_id),
         status_financas_id: toNumberOrNull(payload.status_financas_id),
         lote_frango_id: toNumberOrNull(payload.lote_frango_id),
+        granja_id: toNumberOrNull(granjaId)
       }
 
       if (despesaSelecionada) {
-        await atualizarDespesa(despesaSelecionada.id, dados)
+        await atualizarDespesa(despesaSelecionada.id, granjaId, dados)
       } else {
-        await criarDespesa(dados)
+        await criarDespesa(dados, granjaId)
       }
 
       setOpen(false)
@@ -243,13 +248,13 @@ export default function Despesas() {
       
       <FinanceiroCards cards={[
         {
-          titulo: "Total Gasto no MÊS",
-          valor: formatarMoeda(cardsDespesas?.total_gasto ?? 0),
+          titulo: "Total Gasto no mês",
+          valor: formatarMoeda(cardsDespesas?.total_gasto_mes_granja ?? 0),
           cor: "text-red-600",
         },
         {
-          titulo: "Maior gasto",
-          valor: formatarMoeda(cardsDespesas?.maior_gasto?.valor ?? 0),
+          titulo: "Maior gasto no mês",
+          valor: formatarMoeda(cardsDespesas?.maior_gasto_mes_granja?.valor ?? 0),
           descricao: cardsDespesas?.maior_gasto?.tipo_despesa ?? "",
         },
       ]}/>
@@ -273,7 +278,7 @@ export default function Despesas() {
           ? "Editar Despesa"
           : "Nova Despesa"
         }
-        campos={camposDespesa}
+        campos={campos}
         dadosIniciais={despesaSelecionada}
         onSalvar={salvarDespesa}
       />

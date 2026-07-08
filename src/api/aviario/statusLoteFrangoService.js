@@ -1,7 +1,7 @@
 import api from "../axios";
 
-export async function listarStatusFrango() {
-    const response = await api.get("/granja/status_lote_frango");
+export async function listarStatusFrango(granjaId) {
+    const response = await api.get(`/granja/status_lote_frango?granja_id=${granjaId}`);
     return response.data;
 }
 
@@ -20,7 +20,7 @@ export async function atualizarStatusLoteFrango(id, data) {
     return response.data;
 }
 
-export async function deletarStatusLoteFrango(id){
-    await api.delete(`/granja/status_lote_frango/${id}`);
+export async function deletarStatusLoteFrango(id, data){
+    await api.delete(`/granja/status_lote_frango/${id}?granja_id=${data.granja_id}`);
     return "";
 }

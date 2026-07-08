@@ -15,8 +15,8 @@ export async function criarUsuario(data) {
     return response.data;
 }
 
-export async function atualizarUsuario(id, data) {
-    const response = await api.put(`/usuarios/usuario/${id}`, data)
+export async function atualizarUsuario(data) {
+    const response = await api.put("/usuarios/usuario", data)
     return response.data;
 }
 
@@ -25,13 +25,16 @@ export async function deletarUsuario(id) {
 }
 
 export async function loginUsuario(data) {
-    console.log(data)
     const response = await api.post("/usuarios/login", data);
-    console.log(response)
     return response.data;
 }
 
-export async function me(data) {
-    const response = await api.get("/usuarios/login", data);
+export async function me() {
+    const response = await api.get("/usuarios/login");
     return response.data;
+}
+
+export async function listarSexo() {
+    const res = await api.get("/usuarios/sexo")
+    return res.data;
 }

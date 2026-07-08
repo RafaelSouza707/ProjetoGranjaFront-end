@@ -1,26 +1,26 @@
 import api from "../axios";
 
-export async function listarSatus() {
-    const response = await api.get("/financas/status_financas");
+export async function listarStatusFinancas(granjaId) {
+    const response = await api.get(`/financas/status_financas?granja_id=${granjaId}`);
     return response.data;
 }
 
-export async function buscarStatus(id) {
+export async function buscarStatusFinancas(id) {
     const response = await api.get(`/financas/status_financas/${id}`)
     return response.data;
 }
 
-export async function criarStatus(data) {
+export async function criarStatusFinancas(data) {
     const response = await api.post("/financas/status_financas", data)
     return response.data;
 }
 
-export async function atualizarStatus(id, data) {
+export async function atualizarStatusFinancas(id, data) {
     const response = await api.put(`/financas/status_financas/${id}`, data)
     return response.data;
 }
 
-export async function deletarStatus(id) {
-    const response = await api.delete(`/financas/status_financas/${id}`)
-    return response;
+export async function deletarStatusFinancas(id, data) {
+    const response = await api.delete(`/financas/status_financas/${id}?granja_id=${data.granja_id}`)
+    return response.data
 }

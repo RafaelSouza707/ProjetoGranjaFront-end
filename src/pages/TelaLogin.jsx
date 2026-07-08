@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-import { loginUsuario, criarUsuario } from "@/api/usuario/usuario_service"
+import { loginUsuario, criarUsuario } from "@/api/usuario/usuarioService"
 
 export default function Login() {
+
   const [modo, setModo] = useState("login")
   const { login } = useAuth()
   const navigate = useNavigate()

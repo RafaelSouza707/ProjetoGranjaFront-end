@@ -1,7 +1,7 @@
 import api from "../axios";
 
-export async function listarTipoRacao() {
-    const response = await api.get("/granja/tipo_racao");
+export async function listarTipoRacao(granjaId) {
+    const response = await api.get(`/granja/tipo_racao?granja_id=${granjaId}`);
     return response.data;
 }
 
@@ -16,13 +16,11 @@ export async function criarTipoRacao(data) {
 }
 
 export async function atualizarTipoRacao(id, data) {
-    console.log(id, data)
     const response = await api.put(`/granja/tipo_racao/${id}`, data);
-    console.log(response.data)
     return response.data;
 }
 
-export async function deletarTipoRacao(id) {
-    const response = await api.delete(`/granja/tipo_racao/${id}`);
+export async function deletarTipoRacao(id, data) {
+    await api.delete(`/granja/tipo_racao/${id}?granja_id=${data.granja_id}`);
     return "";
 }

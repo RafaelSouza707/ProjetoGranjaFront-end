@@ -5,7 +5,7 @@ import {
 
 export default function FinanceiroCards({ cards = [] }) {
   return (
-    <div className="flex flex-wrap gap-4" style={{marginBottom:`40px`, marginTop:`40px`}}>
+    <div className="flex flex-nowrap gap-4 overflow-x-auto" style={{ marginBottom: `40px`, marginTop: `40px` }}>
 
       {cards.map((card, index) => (
 

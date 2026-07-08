@@ -1,7 +1,7 @@
 import api from "../axios";
 
-export async function listarTiposDespesas() {
-    const response = await api.get("/financas/tipo_despesa");
+export async function listarTiposDespesa(granjaId) {
+    const response = await api.get(`/financas/tipo_despesa?granja_id=${granjaId}`);
     return response.data;
 }
 
@@ -20,7 +20,10 @@ export async function atualizarTipoDespesa(id, data) {
     return response.data;
 }
 
-export async function deletarTipoDespesa(id) {
-    await api.delete(`/financas/tipo_despesa/${id}`);
-    return "";
+export async function deletarTipoDespesa(id, data) {
+    await api.delete(
+        `/financas/tipo_despesa/${id}?granja_id=${data.granja_id}`
+    )
+
+    return ""
 }

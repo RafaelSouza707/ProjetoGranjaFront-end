@@ -56,52 +56,11 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
         </CNavItem>
 
         <CNavItem>
-          <NavLink to="/producao" className={navLinkClass}>
-            <CIcon customClassName="nav-icon" icon={cilFactory} />
-            Produção
-          </NavLink>
-        </CNavItem>
-
-        <CNavItem>
-          <NavLink to="/lotes_frangos" className={navLinkClass}>
-            <CIcon customClassName="nav-icon" icon={cilFactory} />
-            Lotes de Frangos
-          </NavLink>
-        </CNavItem>
-
-        <CNavItem>
           <NavLink to="/estoque" className={navLinkClass}>
             <CIcon customClassName="nav-icon" icon={cilStorage} />
             Estoque
           </NavLink>
         </CNavItem>
-
-        <CNavGroup
-          toggler={
-            <>
-              <CIcon customClassName="nav-icon" icon={cilWallet} />
-              Finanças da Granja
-            </>
-          }
-        >
-          <CNavItem>
-            <NavLink to="/balancogeral" className={navLinkClass}>
-              Balanço Geral
-            </NavLink>
-          </CNavItem>
-
-          <CNavItem>
-            <NavLink to="/despesas" className={navLinkClass}>
-              Despesas
-            </NavLink>
-          </CNavItem>
-
-          <CNavItem>
-            <NavLink to="/receitas" className={navLinkClass}>
-              Receitas
-            </NavLink>
-          </CNavItem>
-        </CNavGroup>
 
         <CNavItem>
           <NavLink to="/equipe" className={navLinkClass}>
@@ -109,13 +68,7 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
             Equipe
           </NavLink>
         </CNavItem>
-
-        <CNavItem>
-          <NavLink to="/configuracoes" className={navLinkClass}>
-            <CIcon customClassName="nav-icon" icon={cilSettings} />
-            Configurações
-          </NavLink>
-        </CNavItem>
+        
       </CSidebarNav>
     </CSidebar>
   )

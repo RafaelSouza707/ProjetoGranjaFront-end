@@ -1,30 +1,49 @@
 import api from "../axios";
 
-export async function listarDespesas() {
-    const response = await api.get("/financas/despesa");
+export async function listarDespesas(granjaId) {
+    const response = await api.get("/financas/despesa", {
+        params: {
+            granja_id: granjaId
+        }
+    });
     return response.data;
 }
 
-export async function buscarDespesa(id) {
-    const response = await api.get(`/financas/despesa/${id}`)
+export async function criarDespesa(data, granjaId) {
+    const response = await api.post("/financas/despesa",
+        data,
+        {
+            params: {
+                granja_id: granjaId
+            }
+        }
+    )
     return response.data;
 }
 
-export async function criarDespesa(data) {
-    const response = await api.post("/financas/despesa", data)
-    return response.data;
+export async function atualizarDespesa(id, granjaId, data) {
+    await api.put(`/financas/despesa/${id}`,
+        data,
+        {
+            granja_id: granjaId
+        }
+    )
 }
 
-export async function atualizarDespesa(id, data) {
-    await api.put(`/financas/despesa/${id}`, data)
+export async function deletarDespesa(id, granjaId) {
+    await api.delete(`/financas/despesa/${id}`, {
+        params: {
+            granja_id: granjaId
+        }
+    })
 }
 
-export async function deletarDespesa(id) {
-    await api.delete(`/financas/despesa/${id}`)
-}
-
-export async function cardsGastos() {
-    const response = await api.get("/financas/cards_gastos")
+export async function cardsGastosGranja(granjaId) {
+    const response = await api.get("/financas/cards_gastos_granja", {
+        params: {
+            granja_id: granjaId
+        }
+    })
     return response.data;
 }
 

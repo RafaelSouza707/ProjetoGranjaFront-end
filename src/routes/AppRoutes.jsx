@@ -2,15 +2,18 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from '../layout/Layout'
 
 import TelaGraja from '../pages/TelaGranja'
-import BalacoGeral from '../pages/BalancoGeral'
-import Despesas from '../pages/Despesas'
+import Financas from '../pages/Financas'
 import Equipe from '../pages/Equipe'
-import Producao from '../pages/Producao'
-import Receitas from '../pages/Receitas'
+import Produto from '../pages/Produto'
 import Estoque from '../pages/Estoque'
 import Configuracoes from '@/pages/Configuracoes'
 import LotesFrango from '@/pages/LotesFrango'
 import TelaLogin from '@/pages/TelaLogin'
+import LoteFrangoDetalhes from '@/pages/lote-frango/LoteFrangoDetalhes'
+import Receitas from "@/pages/Receitas"
+import Despesas from "@/pages/Despesas"
+import Perfil from "@/pages/Perfil"
+import LoteRacao from "@/pages/LoteRacao"
 
 export default function AppRoutes() {
   return (
@@ -20,14 +23,17 @@ export default function AppRoutes() {
 
         <Route path="tela_login" element={<TelaLogin />} />
 
-        <Route path="balancoGeral" element={<BalacoGeral />} />
-        <Route path="despesas" element={<Despesas />} />
         <Route path="equipe" element={<Equipe />} />
-        <Route path="producao" element={<Producao />} />
-        <Route path="lotes_frangos" element={<LotesFrango />} />
-        <Route path="receitas" element={<Receitas />} />
         <Route path="estoque" element={<Estoque />} />
-        <Route path="configuracoes" element={<Configuracoes />} />
+        <Route path="configuracoes/:granjaId" element={<Configuracoes />} />
+        <Route path="granja/:granjaId/lotes_frangos" element={<LotesFrango />} />
+        <Route path="granja/:granjaId/produtos" element={<Produto />} />
+        <Route path="granja/:granjaId/lote_racao" element={<LoteRacao />} />
+        <Route path="granja/:granjaId/lotes_frangos/:loteFrangoId?" element={<LoteFrangoDetalhes/>}/>
+        <Route path="granja/:granjaId/financas" element={<Financas />} />
+        <Route path="granja/:granjaId/financas/receita" element={<Receitas/>} />
+        <Route path="granja/:granjaId/financas/despesa" element={<Despesas/>} />
+        <Route path="usuario/perfil" element={<Perfil/>} />
       </Route>
     </Routes>
   )

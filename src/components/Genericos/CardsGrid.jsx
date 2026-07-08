@@ -15,6 +15,7 @@ export default function CardsGrid({
   onNovo,
   onEditar,
   onExcluir,
+  onClickCard,
 }) {
   const [busca, setBusca] = useState("")
 
@@ -41,10 +42,17 @@ export default function CardsGrid({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         {filtrados.map((item) => (
-          <Card key={item.id} className="shadow-sm bg-gray-10 border rounded-xl">
+          <Card
+            key={item.id}
+            className={`
+              shadow-sm bg-gray-10 border rounded-xl
+              ${onClickCard ? "cursor-pointer hover:shadow-md transition" : ""}
+            `}
+            onClick={() => onClickCard?.(item)}
+          >
 
             <CardContent className="p-4 space-y-2">
 
@@ -68,7 +76,10 @@ export default function CardsGrid({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => onEditar(item)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditar(item)
+                    }}
                   >
                     Editar
                   </Button>
@@ -78,7 +89,10 @@ export default function CardsGrid({
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => onExcluir(item)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onExcluir(item)
+                    }}
                   >
                     Excluir
                   </Button>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react"
 
 import Tabela from "@/components/Genericos/Tabela"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
 import ModalForm from "@/components/Genericos/ModalForm"
 
@@ -13,7 +11,12 @@ import {
   deletarGranja,
 } from "@/api/granja/granjaService"
 
+import ConfirmDialog  from "@/components/Genericos/ConfirmDialog"
+import { useNavigate } from "react-router-dom"
+
 export default function GranjaPage() {
+  const navigate = useNavigate()
+  
   const [granjas, setGranjas] = useState([])
 
   const [openModal, setOpenModal] = useState(false)
@@ -22,6 +25,9 @@ export default function GranjaPage() {
   const [editId, setEditId] = useState(null)
 
   const [loading, setLoading] = useState(false)
+
+  const [openDelete, setOpenDelete] = useState(false)
+  const [itemDelete, setItemDelete] = useState(null)
 
   async function carregar() {
     const data = await listarGranjas()
@@ -65,12 +71,16 @@ export default function GranjaPage() {
   }
 
   async function excluir(item) {
-    const ok = window.confirm(
-      "Tem certeza que deseja deletar esta granja?"
-    )
-    if (!ok) return
+    setItemDelete(item)
+    setOpenDelete(true)
+  }
 
-    await deletarGranja(item.id)
+  async function confirmarExclusao() {
+    await deletarGranja(itemDelete.id)
+
+    setOpenDelete(false)
+    setItemDelete(null)
+
     await carregar()
   }
 
@@ -99,6 +109,20 @@ export default function GranjaPage() {
         }}
         onEditar={editar}
         onExcluir={excluir}
+        onConfigurar={(item) => navigate(`/configuracoes/${item.id}`)}
+        onTelaLotesFrangos={(item) => navigate(`granja/${item.id}/lotes_frangos`)}
+        onProdutos={(item) => navigate(`granja/${item.id}/produtos`)}
+        onFinancas={(item) => navigate(`granja/${item.id}/financas`)}
+        onLoteRacao={(item) => navigate(`granja/${item.id}/lote_racao`)}
+      />
+
+      <ConfirmDialog
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        onConfirm={confirmarExclusao}
+        titulo="Excluir granja"
+        descricao={`Deseja realmente excluir a granja "${itemDelete?.identificacao}"?`}
+        textoConfirmar="Excluir"
       />
 
       <ModalForm

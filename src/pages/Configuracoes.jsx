@@ -1,16 +1,16 @@
 import SecaoConfiguracao from "@/components/Genericos/SecaoConfiguracao"
 import CrudSection from "@/components/Genericos/CrudTabela"
-import { renderTextoColuna } from "@/components/utils/renderers"
+import { useParams } from "react-router-dom"
 
 import {
-  listarSatus,
-  criarStatus,
-  atualizarStatus,
-  deletarStatus
+  listarStatusFinancas,
+  criarStatusFinancas,
+  atualizarStatusFinancas,
+  deletarStatusFinancas
 } from "@/api/financas/statusFinancasService"
 
 import {
-  listarTiposDespesas,
+  listarTiposDespesa,
   criarTipoDespesa,
   atualizarTipoDespesa,
   deletarTipoDespesa
@@ -64,29 +64,11 @@ import {
   atualizarTipoUnidadeMedida,
   deletarTipoUndadeMediada
 } from "@/api/venda_Estoque/tipoUnidadeMedidaService"
-import { useEffect, useState } from "react"
 
-
-import {
-  listarGranjas
-} from "@/api/granja/granjaService"
 
 export default function Configuracoes() {
-  
-  const [ granjas, setGranjas ] = useState([])
 
-  async function carregarGranjas() {
-    try{
-      const dados = await listarGranjas(); 
-      setGranjas(dados);
-    } catch (error){
-      console.error(error);
-    }
-  }
-
-  useEffect(() => {
-    carregarGranjas()
-  }, []);
+  const { granjaId } = useParams()
 
   return (
     <div className="flex justify-center p-6">
@@ -94,30 +76,32 @@ export default function Configuracoes() {
         <h1 className="text-4xl font-bold text-center">
           Configurações da Granja
         </h1>
+
           {/* FINANCAS */}
         <SecaoConfiguracao titulo="Financas">
           <CrudSection
             titulo="Status Financeiro"
-            listar={listarSatus}
-            criar={criarStatus}
-            atualizar={atualizarStatus}
-            deletar={deletarStatus}
+            granjaId={granjaId}
+            listar={() => listarStatusFinancas(granjaId)}
+            criar={(data) => criarStatusFinancas({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarStatusFinancas(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarStatusFinancas(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }              
             ]}
             campos={[
-              { name: "nome", label: "Nome", type: "text" },
-              { name: "granja_id", label: "Granja", type: "select", options: granjas.map(g =>({value: g.id, label: g.identificacao})), required: true}
+              { name: "nome", label: "Nome", type: "text" }
             ]}
           />
 
           <CrudSection
             titulo="Tipo Despesa"
-            listar={listarTiposDespesas}
-            criar={criarTipoDespesa}
-            atualizar={atualizarTipoDespesa}
-            deletar={deletarTipoDespesa}
+            granjaId={granjaId}
+            listar={() => listarTiposDespesa(granjaId)}
+            criar={(data) => criarTipoDespesa({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoDespesa(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoDespesa(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }
@@ -129,10 +113,11 @@ export default function Configuracoes() {
 
           <CrudSection
             titulo="Tipo Receita"
-            listar={listarTiposReceitas}
-            criar={criarTipoReceita}
-            atualizar={atualizarTipoReceita}
-            deletar={deletarTipoReceita}
+            granjaId={granjaId}
+            listar={() => listarTiposReceitas(granjaId)}
+            criar={(data) => criarTipoReceita({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoReceita(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoReceita(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }
@@ -147,10 +132,11 @@ export default function Configuracoes() {
         <SecaoConfiguracao titulo="Granja">
           <CrudSection
             titulo="Status Lote de Frangos"
-            listar={listarStatusFrango}
-            criar={criarStatusLoteFrango}
-            atualizar={atualizarStatusLoteFrango}
-            deletar={deletarStatusLoteFrango}
+            granjaId={granjaId}
+            listar={() => listarStatusFrango(granjaId)}
+            criar={(data) => criarStatusLoteFrango({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarStatusLoteFrango(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarStatusLoteFrango(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }
@@ -162,10 +148,10 @@ export default function Configuracoes() {
 
           <CrudSection
             titulo="Tipo Produto"
-            listar={listarTipoProduto}
-            criar={criarTipoProduto}
-            atualizar={atualizarTipoProduto}
-            deletar={deletarTipoProduto}
+            listar={() => listarTipoProduto(granjaId)}
+            criar={(data) => criarTipoProduto({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoProduto(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoProduto(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }
@@ -177,10 +163,10 @@ export default function Configuracoes() {
 
           <CrudSection
             titulo="Tipo Ração"
-            listar={listarTipoRacao}
-            criar={criarTipoRacao}
-            atualizar={atualizarTipoRacao}
-            deletar={deletarTipoRacao}
+            listar={() => listarTipoRacao(granjaId)}
+            criar={(data) => criarTipoRacao({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoRacao(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoRacao(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" },
@@ -198,10 +184,10 @@ export default function Configuracoes() {
         <SecaoConfiguracao titulo="Venda e Estoque">
           <CrudSection
             titulo="Tipo Movimentação"
-            listar={listarTipoMovimentacao}
-            criar={criarTipoMovimentacao}
-            atualizar={atualizarTipoMovimentacao}
-            deletar={deletarTipoMovimentacao}
+            listar={() => listarTipoMovimentacao(granjaId)}
+            criar={(data) => criarTipoMovimentacao({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoMovimentacao(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoMovimentacao(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }
@@ -213,10 +199,10 @@ export default function Configuracoes() {
 
           <CrudSection
             titulo="Tipo Venda"
-            listar={listarTipoVenda}
-            criar={criarTipoVenda}
-            atualizar={atualizarTipoVenda}
-            deletar={deletarTipoVenda}
+            listar={() => listarTipoVenda(granjaId)}
+            criar={(data) => criarTipoVenda({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoVenda(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoVenda(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
               { key: "nome", label: "Nome" }
@@ -228,14 +214,14 @@ export default function Configuracoes() {
 
           <CrudSection
             titulo="Tipo Unidade Medida"
-            listar={listarTipoUnidadeMedida}
-            criar={criarTipoUnidadeMedida}
-            atualizar={atualizarTipoUnidadeMedida}
-            deletar={deletarTipoUndadeMediada}
+            listar={() => listarTipoUnidadeMedida(granjaId)}
+            criar={(data) => criarTipoUnidadeMedida({...data, granja_id: Number(granjaId)})}
+            atualizar={(id, data) => atualizarTipoUnidadeMedida(id, {...data, granja_id: Number(granjaId)})}
+            deletar={(id) => deletarTipoUndadeMediada(id, {granja_id: Number(granjaId)})}
             colunas={[
               { key: "id", label: "#" },
-              { key: "sigla", label: "Sigla" },
-              { key: "descricao", label: "Descrição" }
+              { key: "sigla", label: "Sigla"},
+              { key: "descricao", label: "Descrição"}
             ]}
             campos={[
               { name: "sigla", label: "Sigla", type: "text" },

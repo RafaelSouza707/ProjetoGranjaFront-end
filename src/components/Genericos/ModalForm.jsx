@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import {
   Dialog, 
@@ -16,13 +16,17 @@ export default function ModalForm({
   onSalvar,
   titulo,
   campos,
-  dadosIniciais = {},
+  dadosIniciais,
 }) {
 
   const [form, setForm] = useState({})
+  const prevOpenRef = useRef(false)
 
   useEffect(() => {
-    setForm(dadosIniciais || {})
+    if (open && !prevOpenRef.current) {
+      setForm(dadosIniciais || {})
+    }
+    prevOpenRef.current = open
   }, [dadosIniciais, open])
 
   function handleChange(nome, valor) {
@@ -37,7 +41,11 @@ export default function ModalForm({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      disablePointerDismissal
+    >
       <DialogContent className="max-w-2xl">
 
         <DialogHeader>
@@ -76,6 +84,15 @@ export default function ModalForm({
                     </option>
                   ))}
                 </select>
+              ) : campo.type === "date" ? (
+                <input
+                  type="date"
+                  className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50"
+                  value={form[campo.name] ?? ""}
+                  onChange={(e) =>
+                    handleChange(campo.name, e.target.value)
+                  }
+                />
               ) : (
                 <Input
                   type={campo.type || "text"}

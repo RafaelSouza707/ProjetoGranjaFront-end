@@ -5,7 +5,6 @@ import TelaGraja from '../pages/TelaGranja'
 import Financas from '../pages/Financas'
 import Equipe from '../pages/Equipe'
 import Produto from '../pages/Produto'
-import Estoque from '../pages/Estoque'
 import Configuracoes from '@/pages/Configuracoes'
 import LotesFrango from '@/pages/LotesFrango'
 import TelaLogin from '@/pages/TelaLogin'
@@ -24,7 +23,6 @@ export default function AppRoutes() {
         <Route path="tela_login" element={<TelaLogin />} />
 
         <Route path="equipe" element={<Equipe />} />
-        <Route path="estoque" element={<Estoque />} />
         <Route path="configuracoes/:granjaId" element={<Configuracoes />} />
         <Route path="granja/:granjaId/lotes_frangos" element={<LotesFrango />} />
         <Route path="granja/:granjaId/produtos" element={<Produto />} />

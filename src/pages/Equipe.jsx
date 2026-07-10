@@ -1,134 +1,122 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-import FinanceiroTabela from "@/components/Genericos/Tabela"
-import FinanceiroCards from "@/components/Financas/FinanceiroCards"
-import ModalDespesa from "@/components/Financas/ModalDespesa"
+import Tabela from "@/components/Genericos/Tabela"
+import ModalForm from "@/components/Genericos/ModalForm"
+
+import {
+  listarAssociacoes,
+  convidarUsuario,
+  responderConvite
+} from "@/api/usuario/usuarioAssociacaoService"
 
 export default function Equipe() {
 
+  const [usuarios, setUsuarios] = useState([])
+
   const [open, setOpen] = useState(false)
 
-  const despesas = [
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
-    {
-      id: 11,
-      tipo: "Cavalo",
-      valor: "100,00",
-      data_vencimento: "2026/06/10"
-    },
+  async function carregar() {
+    const dados = await listarAssociacoes()
+    console.log(dados)
+    console.log(Array.isArray(dados));
+    setUsuarios(dados)
+  }
 
-  ]
-  const cards = [ /* Talves não precise de cards */
-    {
-      titulo: "Total Gasto no Mês",
-      valor: "R$ 9.112",
-      cor: "text-red-600",
-    },
-    {
-      titulo: "Maior Gasto",
-      valor: "R$ 2.350",
-      descricao: "Ração",
-    },
-  ]
+  useEffect(() => {
+    carregar()
+  }, [])
+
+  async function enviar(payload) {
+    await convidarUsuario(payload)
+
+    setOpen(false)
+
+    carregar()
+  }
+
+  async function aceitar(id) {
+    await responderConvite({
+      id,
+      resposta: "ACEITO"
+    })
+
+    carregar()
+  }
+
+  async function recusar(id) {
+    await responderConvite({
+      id,
+      resposta: "RECUSADO"
+    })
+
+    carregar()
+  }
+
+  async function cancelar(id) {
+    await responderConvite({
+      id,
+      resposta: "CANCELADO"
+    })
+
+    carregar()
+  }
 
   const colunas = [
     {
-      key: "id",
-      label: "#",
+      key: "usuario_destino.nome",
+      label: "Usuário"
     },
     {
-      key: "tipo",
-      label: "Tipo",
-    },
-    {
-      key: "valor",
-      label: "Valor",
-    },
-    {
-      key: "data_vencimento",
-      label: "Vencimento",
+      key: "usuario_destino.email",
+      label: "Email"
     },
     {
       key: "status",
-      label: "Status",
+      label: "Status"
     }
   ]
 
-  function salvarDespesa(payload) {
-    console.log(payload)
-  }
+  const campos = [
+    {
+      name: "email",
+      label: "Email",
+      type: "email"
+    }
+  ]
 
   return (
     <div className="p-6">
-      
+
       <h1 className="text-4xl font-bold mb-6">
         Equipe
       </h1>
-      
-      <FinanceiroCards cards={cards} />
 
-      <h2 className="text-4xl font-bold mb-6">
-        Relatório Funcionarios
-      </h2>
-      <FinanceiroTabela
-        dados={despesas}
+      <Tabela
+        dados={usuarios}
         colunas={colunas}
-        placeholderBusca="Buscar despesa..."
-        textoBotao="+ Nova Despesa"
+        textoBotao="+ Convidar Funcionário"
+        placeholderBusca="Buscar usuário..."
         onNovo={() => setOpen(true)}
+        onEditar={(item) => {
+          switch (item.status) {
+
+            case "PENDENTE":
+              cancelar(item.id)
+              break
+
+            case "RECEBIDO":
+              aceitar(item.id)
+              break
+          }
+        }}
       />
 
-      <ModalDespesa
+      <ModalForm
         open={open}
         onOpenChange={setOpen}
-        onSalvar={salvarDespesa}
+        titulo="Convidar Funcionário"
+        campos={campos}
+        onSalvar={enviar}
       />
 
     </div>

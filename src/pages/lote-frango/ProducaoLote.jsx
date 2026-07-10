@@ -112,7 +112,10 @@ export function ProducaoLote() {
 
   const colunas = [
     { key: "id", label: "ID", className: "w-16" },
-    { key: "lote_frango.identificacao", label: "Identificação Lote de Frango" },
+    { key: "lote_frango.identificacao", 
+      label: "Identificação Lote de Frango",
+      render: (item) => item.lote_frango?.identificacao?.toUpperCase() ?? "-"
+    },
     { key: "produto.tipo_produto.nome", label: "Produto" },
     { key: "produto.tipo_unidade_medida.sigla", label: "Unidade" },
     {

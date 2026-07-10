@@ -174,7 +174,7 @@ export default function LoteRacao() {
         {
           titulo: "Consumo do mês",
           valor: formatarQuilos(cardLoteRacao?.total_consumido_mes?.mes ?? 0),
-          descricao: "Média diária: " + cardLoteRacao?.total_consumido_mes?.diaria ?? "",
+          descricao: "Média diária: " + formatarQuilos(cardLoteRacao?.total_consumido_mes?.diaria) ?? "",
         },
         {
           titulo: "Próximo lote de ração a acabar",
@@ -183,7 +183,7 @@ export default function LoteRacao() {
         },
         {
           titulo: "Previsão para fim do estoque em dias",
-          valor: cardLoteRacao?.previsao?.data ?? "N/D",
+          valor: cardLoteRacao?.previsao + " dias" ?? "N/D",
           descricao: "É uma previsão superficial *",
         },
       ]}/>

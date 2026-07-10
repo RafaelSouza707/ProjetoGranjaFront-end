@@ -56,16 +56,9 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
         </CNavItem>
 
         <CNavItem>
-          <NavLink to="/estoque" className={navLinkClass}>
-            <CIcon customClassName="nav-icon" icon={cilStorage} />
-            Estoque
-          </NavLink>
-        </CNavItem>
-
-        <CNavItem>
           <NavLink to="/equipe" className={navLinkClass}>
             <CIcon customClassName="nav-icon" icon={cilPeople} />
-            Equipe
+            Associados
           </NavLink>
         </CNavItem>
         

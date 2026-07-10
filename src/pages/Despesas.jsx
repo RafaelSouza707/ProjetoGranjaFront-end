@@ -207,6 +207,9 @@ export default function Despesas() {
   }
 
   async function salvarDespesa(payload) {
+    if (payload.data_vencimento == "") {
+      payload.data_vencimento = null
+    }
     try {
       const dados = {
         ...payload,

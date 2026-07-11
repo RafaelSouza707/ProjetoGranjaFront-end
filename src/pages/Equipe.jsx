@@ -6,24 +6,56 @@ import ModalForm from "@/components/Genericos/ModalForm"
 import {
   listarAssociacoes,
   convidarUsuario,
-  responderConvite
+  responderConvite,
+  deletarAssociacao
 } from "@/api/usuario/usuarioAssociacaoService"
+
+import {
+  UserCheck,
+  UserX,
+  Clock3,
+  Building2,
+  UserMinus,
+  Trash2,
+  LogOut
+} from "lucide-react"
+
+import { fazerAssociacao } from "@/api/granja/AssociarUserGranjaService"
+import { listarGranjas } from "@/api/granja/granjaService"
 
 export default function Equipe() {
 
   const [usuarios, setUsuarios] = useState([])
+  const [papel, setPapel] = useState(null)
 
   const [open, setOpen] = useState(false)
+  const [openAssociacao, setOpenAssociacao] = useState(false)
+
+  const [usuarioSelecionado, setUsuarioSelecionado] = useState(null)
+
+  const [granjas, setGranjas] = useState([])
+
+  const podeConvidar = papel === "REMETENTE" || papel === null
+
+  async function carregarGranjas() {
+    try {
+      const dados = await listarGranjas()
+      setGranjas(dados)
+    } catch {
+      setGranjas([])
+    }
+  }
 
   async function carregar() {
     const dados = await listarAssociacoes()
-    console.log(dados)
-    console.log(Array.isArray(dados));
-    setUsuarios(dados)
+
+    setUsuarios(dados.dados)
+    setPapel(dados.papel)
   }
 
   useEffect(() => {
     carregar()
+    carregarGranjas()
   }, [])
 
   async function enviar(payload) {
@@ -61,19 +93,46 @@ export default function Equipe() {
     carregar()
   }
 
+  async function deletar(id) {
+    await deletarAssociacao(id)
+
+    carregar()
+  }
+
+  async function associar(payload) {
+    await fazerAssociacao({
+      ...payload,
+      user_asssociar_id:
+        papel === "REMETENTE"
+          ? usuarioSelecionado.usuario_destino_id
+          : usuarioSelecionado.usuario_origem_id
+    })
+
+    setOpenAssociacao(false)
+    setUsuarioSelecionado(null)
+
+    carregar()
+  }
+
   const colunas = [
     {
-      key: "usuario_destino.nome",
-      label: "Usuário"
+      key:
+        papel === "REMETENTE"
+          ? "usuario_destino.nome"
+          : "usuario_origem.nome",
+      label: "Usuário",
     },
     {
-      key: "usuario_destino.email",
-      label: "Email"
+      key:
+        papel === "REMETENTE"
+          ? "usuario_destino.email"
+          : "usuario_origem.email",
+      label: "Email",
     },
     {
       key: "status",
-      label: "Status"
-    }
+      label: "Status",
+    },
   ]
 
   const campos = [
@@ -84,30 +143,112 @@ export default function Equipe() {
     }
   ]
 
+  const camposAssociacao = [
+    {
+      name: "granja_id",
+      label: "Granja",
+      type: "select",
+      options: granjas.map(g => ({
+        value: g.id,
+        label: g.identificacao
+      }))
+    },
+    {
+      name: "tipo_user",
+      label: "Cargo",
+      type: "select",
+      options: [
+        {
+          value: "OPERADOR",
+          label: "Operador"
+        },
+        {
+          value: "ADMINISTRADOR",
+          label: "Administrador"
+        }
+      ]
+    }
+  ]
+
   return (
     <div className="p-6">
 
       <h1 className="text-4xl font-bold mb-6">
-        Equipe
+        Associação
       </h1>
 
       <Tabela
         dados={usuarios}
         colunas={colunas}
-        textoBotao="+ Convidar Funcionário"
         placeholderBusca="Buscar usuário..."
-        onNovo={() => setOpen(true)}
-        onEditar={(item) => {
-          switch (item.status) {
+        onNovo={podeConvidar ? () => setOpen(true) : undefined}
+        textoBotao={podeConvidar ? "+ Convidar Funcionário" : undefined}
+        acoes={(item) => {
+          if (papel === "DESTINATARIO") {
 
-            case "PENDENTE":
-              cancelar(item.id)
-              break
+            if (item.status === "PENDENTE") {
+              return [
+                {
+                  tooltip: "Aceitar convite",
+                  icon: <UserCheck className="h-4 w-4 text-green-600" />,
+                  onClick: () => aceitar(item.id)
+                },
+                {
+                  tooltip: "Recusar convite",
+                  icon: <UserX className="h-4 w-4 text-red-600" />,
+                  onClick: () => recusar(item.id)
+                }
+              ]
+            }
 
-            case "RECEBIDO":
-              aceitar(item.id)
-              break
+            if (item.status === "ACEITO") {
+              return [
+                {
+                  tooltip: "Sair da equipe",
+                  icon: <LogOut className="h-4 w-4 text-orange-600" />,
+                  onClick: () => deletar(item.id)
+                }
+              ]
+            }
+
+            return []
           }
+
+          if (item.status === "PENDENTE") {
+            return [
+              {
+                tooltip: "Cancelar convite",
+                icon: <Clock3 className="h-4 w-4 text-yellow-500" />,
+                onClick: () => cancelar(item.id)
+              }
+            ]
+          }
+
+          if (item.status === "ACEITO") {
+            return [
+              {
+                tooltip: "Associar à granja",
+                icon: <Building2 className="h-4 w-4 text-blue-600" />,
+                onClick: () => {
+                  setUsuarioSelecionado(item)
+                  setOpenAssociacao(true)
+                }
+              },
+              {
+                tooltip: "Expulsar usuário",
+                icon: <UserMinus className="h-4 w-4 text-red-600" />,
+                onClick: () => deletar(item.id)
+              }
+            ]
+          }
+
+          return [
+            {
+              tooltip: "Excluir registro",
+              icon: <Trash2 className="h-4 w-4 text-red-600" />,
+              onClick: () => deletar(item.id)
+            }
+          ]
         }}
       />
 
@@ -117,6 +258,14 @@ export default function Equipe() {
         titulo="Convidar Funcionário"
         campos={campos}
         onSalvar={enviar}
+      />
+
+      <ModalForm
+        open={openAssociacao}
+        onOpenChange={setOpenAssociacao}
+        titulo="Associar à Granja"
+        campos={camposAssociacao}
+        onSalvar={associar}
       />
 
     </div>

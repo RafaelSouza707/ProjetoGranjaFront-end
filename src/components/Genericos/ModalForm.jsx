@@ -7,6 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+import { toast } from "sonner"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -37,6 +39,23 @@ export default function ModalForm({
   }
 
   function handleSubmit() {
+
+    for (const campo of campos) {
+
+    if (!campo.required) continue
+
+    const valor = form[campo.name]
+
+    if (
+      valor === undefined ||
+      valor === null ||
+      valor === ""
+    ) {
+      toast.warning(`O campo "${campo.label}" é obrigatório.`)
+      return
+    }
+  }
+  
     onSalvar(form)
   }
 

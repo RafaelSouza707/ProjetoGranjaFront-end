@@ -12,12 +12,11 @@ import {
   criarLoteFrango,
   atualizarLoteFrango,
   deletarLoteFrango,
-  cardsLoteFrango
 } from "@/api/aviario/loteFrangoService"
 
-import { listarStatusFrango } from "@/api/aviario/statusLoteFrangoService"
+import { cardsGranja } from "@/api/granja/granjaService"
 
-import { renderTextoColuna } from "@/components/utils/renderers"
+import { listarStatusFrango } from "@/api/aviario/statusLoteFrangoService"
 
 export default function LotesFrango() {
 
@@ -43,7 +42,7 @@ export default function LotesFrango() {
   }
 
   async function carregarCards() {
-    const dados = await cardsLoteFrango(granjaId)
+    const dados = await cardsGranja(granjaId)
     setCardsLoteFrangos(dados)
   }
 
@@ -71,23 +70,27 @@ export default function LotesFrango() {
       options: status.map((s) => ({
         value: s.id,
         label: s.nome.toUpperCase()
-      }))
+      })),
+      required: true
     },
     {
       name: "identificacao",
       label: "Identificação",
-      type: "text"
+      type: "text",
+      required: true
     },
     {
       name: "quantidade_inicial",
       label: "Qtd Inicial",
       type: "number",
-      min: 0
+      min: 0,
+      required: true
     },
     {
       name: "data_alojamento",
       label: "Data Alojamento",
-      type: "date"
+      type: "date",
+      required: true
     },
     {
       name: "fornecedor",
@@ -98,12 +101,13 @@ export default function LotesFrango() {
       name: "quantidade_atual",
       label: "Qtd Atual",
       type: "number",
-      min: 0
+      min: 0,
+      required: true
     },
     {
       name: "observacao",
       label: "Observação",
-      type: "text"
+      type: "text",
     }
   ]
 

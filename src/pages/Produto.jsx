@@ -175,6 +175,7 @@ const [produtoDelete, setProdutoDelete] = useState(null)
       value: tipo.id,
       label: tipo.nome,
       })),
+      required: true
     },
     {
       name: "tipo_unidade_medida_id",
@@ -184,6 +185,7 @@ const [produtoDelete, setProdutoDelete] = useState(null)
       value: unidade.id,
       label: unidade.sigla,
       })),
+      required: true
     },
     {
       name: "descricao",
@@ -195,11 +197,13 @@ const [produtoDelete, setProdutoDelete] = useState(null)
       label: "Quantidade",
       type: "number",
       min: 0,
+      required: true
     },
     {
       name: "data_cadastro",
       label: "Data Cadastro",
       type: "date",
+      required: true
     },
   ]
 

@@ -19,3 +19,12 @@ export async function deletarGranja(id) {
     const res = await api.delete(`/granja/granja/${id}`)
     return res.data
 }
+
+export async function cardsGranja(granjaId){
+    const res = await api.get("/granja/cards_granja", {
+        params: {
+            granja_id: granjaId
+        }
+    })
+    return res.data;
+}

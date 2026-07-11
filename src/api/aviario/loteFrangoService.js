@@ -26,6 +26,7 @@ export async function deletarLoteFrango(id) {
 }
 
 export async function cardsLoteFrango(granjaId, loteFrangoId) {
+    console.log(granjaId, loteFrangoId)
     const response = await api.get("granja/cards_lote_frango", {
         params: {
             granja_id: granjaId,

@@ -46,6 +46,7 @@ export default function Tabela({
   onProdutos,
   onFinancas,
   onLoteRacao,
+  acoes,
 }) {
   const [busca, setBusca] = useState("")
 
@@ -167,7 +168,7 @@ export default function Tabela({
                       )
                     }
 
-                    {onProdutos && (
+                    {onProdutos &&(
                       <CTooltip content="Produtos">
                         <Button
                           variant="ghost"
@@ -247,6 +248,22 @@ export default function Tabela({
                         </CTooltip>
                       )
                     }
+
+                    {acoes?.(item)?.map((acao, index) => (
+                      <CTooltip
+                        key={index}
+                        content={acao.tooltip}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-15 w-15"
+                          onClick={acao.onClick}
+                        >
+                          {acao.icon}
+                        </Button>
+                      </CTooltip>
+                    ))}
 
                   </div>
                 </TableCell>

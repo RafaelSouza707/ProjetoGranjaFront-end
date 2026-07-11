@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 
 import Tabela from "@/components/Genericos/Tabela"
-
 import ModalForm from "@/components/Genericos/ModalForm"
+import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
 
 import {
   listarGranjas,
@@ -11,12 +11,44 @@ import {
   deletarGranja,
 } from "@/api/granja/granjaService"
 
-import ConfirmDialog  from "@/components/Genericos/ConfirmDialog"
+import { toast } from "sonner"
+
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/components/utils/AuthContext"
 
 export default function GranjaPage() {
+
+  function abrirTela(item, rota, permissao) {
+    if (!item.contexto.permissoes.includes(permissao)) {
+      toast.error("Você não possui permissão para acessar este módulo.")
+      return
+    }
+
+    selecionarGranja(
+      {
+        id: item.id,
+        identificacao: item.identificacao,
+      },
+      item.contexto
+    )
+
+    navigate(rota)
+  }
+
+  function executarAcao(item, permissao, callback) {
+
+    if (!item.contexto.permissoes.includes(permissao)) {
+      toast.error("Você não possui permissão para realizar esta ação.")
+      return
+    }
+
+    callback(item)
+  }
+
   const navigate = useNavigate()
-  
+
+  const { selecionarGranja } = useAuth()
+
   const [granjas, setGranjas] = useState([])
 
   const [openModal, setOpenModal] = useState(false)
@@ -70,7 +102,7 @@ export default function GranjaPage() {
     setOpenModal(true)
   }
 
-  async function excluir(item) {
+  function excluir(item) {
     setItemDelete(item)
     setOpenDelete(true)
   }
@@ -97,6 +129,7 @@ export default function GranjaPage() {
 
   return (
     <div className="p-4 space-y-4">
+
       <Tabela
         dados={granjas}
         colunas={colunas}
@@ -107,13 +140,30 @@ export default function GranjaPage() {
           setIdentificacao("")
           setOpenModal(true)
         }}
-        onEditar={editar}
-        onExcluir={excluir}
-        onConfigurar={(item) => navigate(`/configuracoes/${item.id}`)}
-        onTelaLotesFrangos={(item) => navigate(`granja/${item.id}/lotes_frangos`)}
-        onProdutos={(item) => navigate(`granja/${item.id}/produtos`)}
-        onFinancas={(item) => navigate(`granja/${item.id}/financas`)}
-        onLoteRacao={(item) => navigate(`granja/${item.id}/lote_racao`)}
+
+        onTelaLotesFrangos={(item) =>
+          abrirTela(item, `granja/${item.id}/lotes_frangos`, "AVIARIO")
+        }
+
+        onProdutos={(item) =>
+          abrirTela(item, `granja/${item.id}/produtos`, "ESTOQUE")
+        }
+
+        onFinancas={(item) =>
+          abrirTela(item, `granja/${item.id}/financas`, "FINANCAS")
+        }
+
+        onConfigurar={(item) =>
+          abrirTela(item, `/configuracoes/${item.id}`, "GRANJA")
+        }
+
+        onEditar={(item) =>
+          executarAcao(item, "GRANJA", editar)
+        }
+
+        onExcluir={(item) =>
+          executarAcao(item, "GRANJA", excluir)
+        }
       />
 
       <ConfirmDialog

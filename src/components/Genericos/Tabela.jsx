@@ -27,6 +27,7 @@ import {
   Bird,
   ClipboardList,
   DollarSign,
+  Scale,
 } from "lucide-react"
 
 function getValue(obj, path) {
@@ -47,6 +48,7 @@ export default function Tabela({
   onFinancas,
   onLoteRacao,
   acoes,
+  onVendas,
 }) {
   const [busca, setBusca] = useState("")
 
@@ -177,6 +179,19 @@ export default function Tabela({
                           onClick={() => onProdutos(item)}
                         >
                           <ClipboardList className="h-4 w-4" />
+                        </Button>
+                      </CTooltip>
+                    )}
+
+                    {onVendas && (
+                      <CTooltip content="Vendas">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-15 w-15"
+                          onClick={() => onVendas(item)}
+                        >
+                          <Scale className="h-4 w-4" />
                         </Button>
                       </CTooltip>
                     )}

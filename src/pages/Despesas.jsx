@@ -121,7 +121,6 @@ export default function Despesas() {
         value: l.id,
         label: l.identificacao.toUpperCase()
       })),
-      required: true
     },
     {
       name: "data",

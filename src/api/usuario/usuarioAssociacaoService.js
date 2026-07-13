@@ -2,7 +2,6 @@ import api from "../axios";
 
 export async function listarAssociacoes() {
     const res = await api.get("/usuarios/relacao")
-    console.log(res.data)
     return res.data;
 }
 

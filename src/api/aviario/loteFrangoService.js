@@ -5,8 +5,12 @@ export async function listarLoteFrangos(granjaId){
     return response.data;
 }
 
-export async function buscarLoteFrango(id) {
-    const response = await api.get(`/granja/lote_frango/${id}`);
+export async function buscarLoteFrango(loteFrangoId) {
+    const response = await api.get("/granja/lote_frango", {
+        params: {
+            lote_frango_id: loteFrangoId
+        }
+    });
     return response.data;
 }
 
@@ -26,7 +30,6 @@ export async function deletarLoteFrango(id) {
 }
 
 export async function cardsLoteFrango(granjaId, loteFrangoId) {
-    console.log(granjaId, loteFrangoId)
     const response = await api.get("granja/cards_lote_frango", {
         params: {
             granja_id: granjaId,

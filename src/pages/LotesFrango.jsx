@@ -207,7 +207,7 @@ export default function LotesFrango() {
         onEditar={editar}
         onExcluir={excluir}
         onClickCard={(item) =>
-          navigate(`/granja/${granjaId}/lotes_frangos/${item.id}`)
+          navigate(`/granja/${granjaId}/lotes_frangos/${item.id}/identificacao/${item.identificacao}`)
         }
         campos={[
           {

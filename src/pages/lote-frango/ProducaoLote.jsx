@@ -13,6 +13,8 @@ import {
 } from "@/api/aviario/producaoLote"
 import { listarProdutos } from "@/api/venda_Estoque/produtoService"
 
+import { formatarData } from "@/components/utils/DataFormater"
+
 import { parseQuantidade, formatarQuantidade } from "@/components/utils/converterQuantidade"
 
 export function ProducaoLote() {
@@ -126,10 +128,7 @@ export function ProducaoLote() {
     {
       key: "data_producao",
       label: "Data",
-      render: (item) =>
-        item.data_producao
-          ? new Date(item.data_producao).toLocaleDateString("pt-BR")
-          : "-",
+      render: (item) => formatarData(item.data_producao)
     },
     { key: "observacao", label: "Observação" },
   ]

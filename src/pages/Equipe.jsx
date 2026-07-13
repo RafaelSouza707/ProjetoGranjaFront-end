@@ -48,7 +48,7 @@ export default function Equipe() {
 
   async function carregar() {
     const dados = await listarAssociacoes()
-
+    console.log("Resposta:", dados)
     setUsuarios(dados.dados)
     setPapel(dados.papel)
   }
@@ -94,9 +94,15 @@ export default function Equipe() {
   }
 
   async function deletar(id) {
+    console.log("Antes do delete")
+
     await deletarAssociacao(id)
 
-    carregar()
+    console.log("Depois do delete")
+
+    await carregar()
+
+    console.log("Depois do carregar")
   }
 
   async function associar(payload) {

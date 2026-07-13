@@ -13,6 +13,8 @@ import {
 } from "@/api/aviario/consumoLoteDiariaService"
 import { listarLoteRacoes } from "@/api/aviario/loteRacaoService"
 
+import { formatarData } from "@/components/utils/DataFormater"
+
 import { formatarQuilos } from "@/components/utils/FormatarQuilos"
 
 export function ConsumoLote() {
@@ -118,8 +120,7 @@ export function ConsumoLote() {
     {
       key: "data",
       label: "Data",
-      render: (item) =>
-        item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "-",
+      render: (item) => formatarData(item.data)
     },
     { key: "quilos", label: "Quilos", render: (item) => formatarQuilos(item.quilos)},
   ]

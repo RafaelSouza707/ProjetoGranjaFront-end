@@ -12,15 +12,18 @@ import { MortalidadeLote } from "@/pages/lote-frango/MortalidadeLote"
 import { ProducaoLote } from "@/pages/lote-frango/ProducaoLote"
 import { ResumoLote } from "@/pages/lote-frango/ResumoLote"
 
+import { buscarLoteFrango } from "@/api/aviario/loteFrangoService"
+import { useEffect, useState } from "react"
+
 export default function LoteFrangoDetalhes() {
-  const { granjaId, loteFrangoId } = useParams()
+  const { granjaId, loteFrangoId, identificacao } = useParams()
 
   return (
     <div className="p-6 space-y-6">
 
       <div>
         <h1 className="text-3xl font-bold">
-          Lote #{loteFrangoId}
+          <b>Lote: </b>{identificacao.toUpperCase()}
         </h1>
 
         <p className="text-muted-foreground">

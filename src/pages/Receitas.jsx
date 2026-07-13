@@ -71,6 +71,7 @@ export default function Receitas() {
   async function carregarReceitas() {
     try {
       const dados = await listarReceitas(granjaId)
+      console.log(dados)
       setReceitas(dados)
     } catch (error) {
       console.error("Erro ao carregar receitas:", error)
@@ -191,8 +192,8 @@ export default function Receitas() {
       label: "STATUS",
     },
     {
-      key: "venda.id",
-      label: "VENDA",
+      key: "venda.tipo.nome",
+      label: "TIPO DE VENDA",
     },
     {
       key: "data",

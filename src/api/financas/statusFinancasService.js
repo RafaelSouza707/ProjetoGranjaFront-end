@@ -1,7 +1,11 @@
 import api from "../axios";
 
 export async function listarStatusFinancas(granjaId) {
-    const response = await api.get(`/financas/status_financas?granja_id=${granjaId}`);
+    const response = await api.get("/financas/status_financas", {
+        params: {
+            granja_id: granjaId
+        }
+    });
     return response.data;
 }
 
@@ -20,7 +24,10 @@ export async function atualizarStatusFinancas(id, data) {
     return response.data;
 }
 
-export async function deletarStatusFinancas(id, data) {
-    const response = await api.delete(`/financas/status_financas/${id}?granja_id=${data.granja_id}`)
-    return response.data
+export async function deletarStatusFinancas(id, granjaId) {
+    await api.delete(`/financas/status_financas/${id}`, {
+        params: {
+            granja_id: granjaId
+        }
+    })
 }

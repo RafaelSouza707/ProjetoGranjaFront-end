@@ -13,6 +13,7 @@ import Receitas from "@/pages/Receitas"
 import Despesas from "@/pages/Despesas"
 import Perfil from "@/pages/Perfil"
 import LoteRacao from "@/pages/LoteRacao"
+import Venda from "@/pages/Venda"
 
 export default function AppRoutes() {
   return (
@@ -27,7 +28,8 @@ export default function AppRoutes() {
         <Route path="granja/:granjaId/lotes_frangos" element={<LotesFrango />} />
         <Route path="granja/:granjaId/produtos" element={<Produto />} />
         <Route path="granja/:granjaId/lote_racao" element={<LoteRacao />} />
-        <Route path="granja/:granjaId/lotes_frangos/:loteFrangoId?" element={<LoteFrangoDetalhes/>}/>
+        <Route path='granja/:granjaId/vendas' element={<Venda />} />
+        <Route path="granja/:granjaId/lotes_frangos/:loteFrangoId/identificacao/:identificacao" element={<LoteFrangoDetalhes/>}/>
         <Route path="granja/:granjaId/financas" element={<Financas />} />
         <Route path="granja/:granjaId/financas/receita" element={<Receitas/>} />
         <Route path="granja/:granjaId/financas/despesa" element={<Despesas/>} />

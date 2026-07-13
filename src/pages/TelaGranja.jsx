@@ -149,12 +149,20 @@ export default function GranjaPage() {
           abrirTela(item, `granja/${item.id}/produtos`, "ESTOQUE")
         }
 
+        onVendas={(item) => 
+          abrirTela(item, `granja/${item.id}/vendas`, "VENDA")
+        }
+
         onFinancas={(item) =>
           abrirTela(item, `granja/${item.id}/financas`, "FINANCAS")
         }
 
         onConfigurar={(item) =>
           abrirTela(item, `/configuracoes/${item.id}`, "GRANJA")
+        }
+
+        onLoteRacao={(item) => 
+          abrirTela(item, `/granja/${item.id}/lote_racao`,"ESTOQUE")
         }
 
         onEditar={(item) =>

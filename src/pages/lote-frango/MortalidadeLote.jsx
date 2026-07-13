@@ -11,6 +11,8 @@ import {
   deletarMortalidade,
 } from "@/api/aviario/mortalidadeService"
 
+import { formatarData } from "@/components/utils/DataFormater"
+
 export function MortalidadeLote() {
   const { granjaId, loteFrangoId } = useParams()
 
@@ -95,8 +97,7 @@ export function MortalidadeLote() {
     {
       key: "data",
       label: "Data",
-      render: (item) =>
-        item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "-",
+      render: (item) => formatarData(item.data),
     },
     { key: "quantidade_mortes", label: "Mortes" },
   ]

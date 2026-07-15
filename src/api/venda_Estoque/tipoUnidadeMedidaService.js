@@ -1,7 +1,11 @@
 import api from "../axios";
 
-export async function listarTipoUnidadeMedida(granja_id) {
-    const response = await api.get(`/venda_estoque/tipo_unidade_medida?granja_id=${granja_id}`);
+export async function listarTipoUnidadeMedida(granjaId) {
+    const response = await api.get(`/venda_estoque/tipo_unidade_medida`, {
+        params: {
+            granja_id: granjaId
+        }
+    });
     return  response.data;
 }
 
@@ -21,6 +25,10 @@ export async function atualizarTipoUnidadeMedida(id, data) {
 }
 
 export async function deletarTipoUndadeMediada(id, data) {
-    await api.delete(`/venda_estoque/tipo_unidade_medida/${id}?granja_id=${data.granja_id}`);
+    await api.delete(`/venda_estoque/tipo_unidade_medida/${id}`, {
+        params: {
+            granja_id: data.granja_id
+        }
+    });
     return  "";
 }

@@ -48,7 +48,6 @@ export default function Equipe() {
 
   async function carregar() {
     const dados = await listarAssociacoes()
-    console.log("Resposta:", dados)
     setUsuarios(dados.dados)
     setPapel(dados.papel)
   }
@@ -62,7 +61,6 @@ export default function Equipe() {
     await convidarUsuario(payload)
 
     setOpen(false)
-
     carregar()
   }
 
@@ -94,15 +92,8 @@ export default function Equipe() {
   }
 
   async function deletar(id) {
-    console.log("Antes do delete")
-
     await deletarAssociacao(id)
-
-    console.log("Depois do delete")
-
-    await carregar()
-
-    console.log("Depois do carregar")
+    carregar()
   }
 
   async function associar(payload) {
@@ -124,21 +115,47 @@ export default function Equipe() {
     {
       key:
         papel === "REMETENTE"
-          ? "usuario_destino.nome"
-          : "usuario_origem.nome",
+          ? "associacao.usuario_destino.nome"
+          : "associacao.usuario_origem.nome",
       label: "Usuário",
     },
     {
       key:
         papel === "REMETENTE"
-          ? "usuario_destino.email"
-          : "usuario_origem.email",
+          ? "associacao.usuario_destino.email"
+          : "associacao.usuario_origem.email",
       label: "Email",
     },
     {
-      key: "status",
+      key: "associacao.status",
       label: "Status",
     },
+    {
+      key: "granjas",
+      label: "Granjas",
+      render: (item) => {
+        if (!item.granjas?.length) {
+          return (
+            <span className="text-gray-400 italic">
+              Nenhuma
+            </span>
+          )
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {item.granjas.map(granja => (
+              <span
+                key={granja.id}
+                className="px-2 py-1 rounded-md bg-blue-100 text-blue-700 text-xs font-medium"
+              >
+                {granja.identificacao}
+              </span>
+            ))}
+          </div>
+        )
+      }
+    }
   ]
 
   const campos = [
@@ -190,29 +207,32 @@ export default function Equipe() {
         onNovo={podeConvidar ? () => setOpen(true) : undefined}
         textoBotao={podeConvidar ? "+ Convidar Funcionário" : undefined}
         acoes={(item) => {
+
+          const associacao = item.associacao
+
           if (papel === "DESTINATARIO") {
 
-            if (item.status === "PENDENTE") {
+            if (associacao.status === "PENDENTE") {
               return [
                 {
                   tooltip: "Aceitar convite",
                   icon: <UserCheck className="h-4 w-4 text-green-600" />,
-                  onClick: () => aceitar(item.id)
+                  onClick: () => aceitar(associacao.id)
                 },
                 {
                   tooltip: "Recusar convite",
                   icon: <UserX className="h-4 w-4 text-red-600" />,
-                  onClick: () => recusar(item.id)
+                  onClick: () => recusar(associacao.id)
                 }
               ]
             }
 
-            if (item.status === "ACEITO") {
+            if (associacao.status === "ACEITO") {
               return [
                 {
                   tooltip: "Sair da equipe",
                   icon: <LogOut className="h-4 w-4 text-orange-600" />,
-                  onClick: () => deletar(item.id)
+                  onClick: () => deletar(associacao.id)
                 }
               ]
             }
@@ -220,30 +240,30 @@ export default function Equipe() {
             return []
           }
 
-          if (item.status === "PENDENTE") {
+          if (associacao.status === "PENDENTE") {
             return [
               {
                 tooltip: "Cancelar convite",
                 icon: <Clock3 className="h-4 w-4 text-yellow-500" />,
-                onClick: () => cancelar(item.id)
+                onClick: () => cancelar(associacao.id)
               }
             ]
           }
 
-          if (item.status === "ACEITO") {
+          if (associacao.status === "ACEITO") {
             return [
               {
                 tooltip: "Associar à granja",
                 icon: <Building2 className="h-4 w-4 text-blue-600" />,
                 onClick: () => {
-                  setUsuarioSelecionado(item)
+                  setUsuarioSelecionado(associacao)
                   setOpenAssociacao(true)
                 }
               },
               {
                 tooltip: "Expulsar usuário",
                 icon: <UserMinus className="h-4 w-4 text-red-600" />,
-                onClick: () => deletar(item.id)
+                onClick: () => deletar(associacao.id)
               }
             ]
           }
@@ -252,7 +272,7 @@ export default function Equipe() {
             {
               tooltip: "Excluir registro",
               icon: <Trash2 className="h-4 w-4 text-red-600" />,
-              onClick: () => deletar(item.id)
+              onClick: () => deletar(associacao.id)
             }
           ]
         }}

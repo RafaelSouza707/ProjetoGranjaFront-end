@@ -20,7 +20,20 @@ import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
 import { listarVendas } from "@/api/venda_Estoque/vendaService"
 
 export default function Receitas() {
+
+  async function carregarDados() {
+    await Promise.all([
+      carregarCards(),
+      carregarTiposReceita(),
+      carregarVendas(),
+      carregarStatusFinancas(),
+    ])
+  }
+
   const { granjaId } = useParams()
+  
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
 
   const [open, setOpen] = useState(false)
 
@@ -70,9 +83,10 @@ export default function Receitas() {
 
   async function carregarReceitas() {
     try {
-      const dados = await listarReceitas(granjaId)
-      console.log(dados)
-      setReceitas(dados)
+      const dados = await listarReceitas(granjaId, page)
+
+      setReceitas(dados.dados)
+      setPagination(dados.pagination)
     } catch (error) {
       console.error("Erro ao carregar receitas:", error)
     }
@@ -162,7 +176,7 @@ export default function Receitas() {
     },
     {
       name: "data",
-      label: "Data da Despesa",
+      label: "Data da Receita",
       type: "date"
     },
     {
@@ -178,7 +192,7 @@ export default function Receitas() {
     }
   ]
 
-  const colunas = [
+const colunas = [
     {
       key: "id",
       label: "#",
@@ -186,18 +200,22 @@ export default function Receitas() {
     {
       key: "tipo_receita.nome",
       label: "TIPO DE RECEITA",
+      render: (item) => item.tipo_receita?.nome?.toUpperCase() ?? "-"
     },
     {
       key: "status.nome",
       label: "STATUS",
+      render: (item) => item.status?.nome?.toUpperCase() ?? "-"
     },
     {
       key: "venda.tipo.nome",
       label: "TIPO DE VENDA",
+      render: (item) => item.venda?.tipo?.nome ?? "Receita Direta" // Se venda for null, exibe um texto amigável
     },
     {
       key: "data",
       label: "DATA",
+      render: (item) => item.data ? new Date(item.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "-"
     },
     {
       key: "valor",
@@ -207,18 +225,18 @@ export default function Receitas() {
     {
       key: "descricao",
       label: "DESCRIÇÃO",
+      render: (item) => item.descricao ?? "-"
     },
   ]
 
   useEffect(() => {
-    carregarReceitas()
-    carregarCards()
-    carregarTiposReceita()
-    carregarVendas()
-    carregarStatusFinancas()
+    carregarDados()
   }, [])
 
-
+  useEffect(() => {
+    carregarReceitas()
+  }, [page])
+  
   return (
     <div className="p-6">
       <h1 className="text-4xl font-bold mb-6">
@@ -256,6 +274,8 @@ export default function Receitas() {
         onNovo={novaReceita}
         onEditar={editarReceita}
         onExcluir={(item) => apagarReceita(item.id)}
+        pagination={pagination}
+        onPageChange={setPage}
       />
 
       <ModalForm

@@ -21,29 +21,35 @@ import { parseQuantidade, formatarQuantidade } from "@/components/utils/converte
 export default function Produto() {
 const { granjaId } = useParams()
 
-const [produtos, setProdutos] = useState([])
-const [tipoProduto, setTipoProduto] = useState([])
-const [tipoUnidadeMedida, setTipoUnidadeMedida] = useState([])
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
 
-const [open, setOpen] = useState(false)
-const [produtoSelecionado, setProdutoSelecionado] = useState(null)
+  const [produtos, setProdutos] = useState([])
+  const [tipoProduto, setTipoProduto] = useState([])
+  const [tipoUnidadeMedida, setTipoUnidadeMedida] = useState([])
 
-const [openDelete, setOpenDelete] = useState(false)
-const [produtoDelete, setProdutoDelete] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null)
+
+  const [openDelete, setOpenDelete] = useState(false)
+  const [produtoDelete, setProdutoDelete] = useState(null)
 
   useEffect(() => {
     if (!granjaId) return
-
-    carregarProdutos()
     carregarTipoProduto()
     carregarUnidadeMedida()
 
-  }, [granjaId])
+  }, [])
+
+  useEffect(() => {
+    carregarProdutos()
+  }, [page])
 
   async function carregarProdutos() {
     try {
-      const dados = await listarProdutos(granjaId)
-      setProdutos(dados ?? [])
+      const dados = await listarProdutos(granjaId, page)
+      setProdutos(dados.dados)
+      setPagination(dados.pagination)
     } catch (error) {
       console.error("Erro ao carregar produtos:", error)
       setProdutos([])
@@ -220,6 +226,8 @@ const [produtoDelete, setProdutoDelete] = useState(null)
         onNovo={novoProduto}
         onEditar={editarProduto}
         onExcluir={excluirProduto}
+        pagination={pagination}
+        onPageChange={setPage}
         />
 
       <ModalForm

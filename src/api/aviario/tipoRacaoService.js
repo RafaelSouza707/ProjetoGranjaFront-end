@@ -1,7 +1,11 @@
 import api from "../axios";
 
 export async function listarTipoRacao(granjaId) {
-    const response = await api.get(`/granja/tipo_racao?granja_id=${granjaId}`);
+    const response = await api.get(`/granja/tipo_racao`, {
+        params: {
+            granja_id: granjaId
+        }
+    });
     return response.data;
 }
 
@@ -21,6 +25,10 @@ export async function atualizarTipoRacao(id, data) {
 }
 
 export async function deletarTipoRacao(id, data) {
-    await api.delete(`/granja/tipo_racao/${id}?granja_id=${data.granja_id}`);
+    await api.delete(`/granja/tipo_racao/${id}`, {
+        params: {
+            granja_id: data.granja_id
+        }
+    });
     return "";
 }

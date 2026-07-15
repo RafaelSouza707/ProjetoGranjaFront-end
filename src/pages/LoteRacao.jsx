@@ -109,6 +109,7 @@ export default function LoteRacao() {
 
   async function apagarLoteRacao(id) {
     await deletarLoteRacao(id, granjaId);
+
     await carregarLoteRacao()
     await carregarCards()
   }
@@ -130,7 +131,7 @@ export default function LoteRacao() {
     try {
       const dados = {
         ...payload,
-        tipo_racao_id: toNumberOrNull(payload.tipo_racao_id),
+        tipo_racao_id: toNumberOrNull(payload.tipo_racao.id),
         granja_id: toNumberOrNull(granjaId)
       }
 

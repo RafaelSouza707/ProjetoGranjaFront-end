@@ -49,6 +49,9 @@ export default function Tabela({
   onLoteRacao,
   acoes,
   onVendas,
+  pagination,
+  onPageChange,
+  onCliente,
 }) {
   const [busca, setBusca] = useState("")
 
@@ -67,9 +70,25 @@ export default function Tabela({
   }
 
   const dadosFiltrados = (dados || []).filter((item) => {
-    if (!busca) return true
-    return JSON.stringify(item).toLowerCase().includes(busca.toLowerCase())
-  })
+    if (!busca) return true;
+    
+    return Object.values(item).some((valor) => {
+      if (valor === null || valor === undefined) return false;
+      
+      if (typeof valor === "string" || typeof valor === "number") {
+        return String(valor).toLowerCase().includes(busca.toLowerCase());
+      }
+      
+      if (typeof valor === "object") {
+        return Object.values(valor).some((subValor) => 
+          (typeof subValor === "string" || typeof subValor === "number") &&
+          String(subValor).toLowerCase().includes(busca.toLowerCase())
+        );
+      }
+      
+      return false;
+    });
+  });
 
   const dadosOrdenados = [...dadosFiltrados].sort((a, b) => {
     if (!sortConfig.key) return 0
@@ -99,6 +118,28 @@ export default function Tabela({
       ? String(aValue).localeCompare(String(bValue))
       : String(bValue).localeCompare(String(aValue))
   })
+
+  const paginas = []
+
+  if (pagination) {
+    const total = pagination.pages
+    const atual = pagination.page
+
+    let inicio = Math.max(1, atual - 4)
+    let fim = Math.min(total, atual + 4)
+
+    if (fim - inicio < 8) {
+      if (inicio === 1) {
+        fim = Math.min(total, 9)
+      } else if (fim === total) {
+        inicio = Math.max(1, total - 8)
+      }
+    }
+
+    for (let i = inicio; i <= fim; i++) {
+      paginas.push(i)
+    }
+  }
 
   return (
     <Card>
@@ -288,6 +329,38 @@ export default function Tabela({
           </TableBody>
 
         </Table>
+
+        {pagination && pagination.pages > 1 && (
+          <div className="flex justify-center items-center gap-1 mt-6">
+
+            <Button
+              variant="ghost"
+              disabled={!pagination.has_prev}
+              onClick={() => onPageChange(pagination.page - 1)}
+            >
+              {"<"}
+            </Button>
+
+            {paginas.map((pagina) => (
+              <Button
+                key={pagina}
+                variant={pagina === pagination.page ? "default" : "ghost"}
+                onClick={() => onPageChange(pagina)}
+              >
+                {pagina}
+              </Button>
+            ))}
+
+            <Button
+              variant="ghost"
+              disabled={!pagination.has_next}
+              onClick={() => onPageChange(pagination.page + 1)}
+            >
+              {">"}
+            </Button>
+
+          </div>
+        )}
 
       </CardContent>
     </Card>

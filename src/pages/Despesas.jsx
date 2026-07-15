@@ -16,14 +16,22 @@ export default function Despesas() {
 
   const { granjaId } = useParams()
 
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
+
   async function carregarDados() {
     await Promise.all([
-      carregarDespesas(),
       carregarCards(),
       carregarTiposDespesas(),
       carregarStatus(),
       carregarLoteFrangos(),
     ])
+  }
+
+  async function carregarDespesas() {
+    const dados = await listarDespesas(granjaId, page);
+    setDespesas(dados.dados)
+    setPagination(dados.pagination)
   }
 
   const colunas = [
@@ -115,7 +123,7 @@ export default function Despesas() {
     },
     { 
       name: "lote_frango_id",
-      label: "Lote de Frango",
+      label: "Lote de Frango",  
       type: "select",
       options: loteFrango.map(l => ({
         value: l.id,
@@ -176,11 +184,6 @@ export default function Despesas() {
     await carregarDespesas()
     await carregarCards()
   }
-  
-  async function carregarDespesas() {
-    const dados = await listarDespesas(granjaId);
-    setDespesas(dados)
-  }
 
   async function novaDespesa() {
     setDespesaSelecionada(null)
@@ -236,7 +239,11 @@ export default function Despesas() {
 
   useEffect(() => {
     carregarDados()
-  }, []);
+  }, [])
+
+  useEffect(() => {
+    carregarDespesas()
+  }, [page]);
 
   if (loading) {
     return <p>Carregando...</p>
@@ -260,7 +267,6 @@ export default function Despesas() {
           descricao: cardsDespesas?.maior_gasto?.tipo_despesa ?? "",
         },
       ]}/>
-
       <Tabela
         dados={despesas}
         colunas={colunas}
@@ -270,6 +276,8 @@ export default function Despesas() {
         onEditar={editarDespesa}
         onExcluir={(item) => apagarDespesa(item.id)}
         onSearch={buscaElasticaDespesa}
+        pagination={pagination}
+        onPageChange={setPage}
       />
 
       <ModalForm

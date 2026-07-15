@@ -14,7 +14,7 @@ export async function criarCliente(data) {
     return res.data;
 }
 
-export async function atualziarCliente(id, data) {
+export async function atualizarCliente(id, data) {
     const res = await api.put(`/usuarios/cliente/${id}`, data)
     return res.data;
 }

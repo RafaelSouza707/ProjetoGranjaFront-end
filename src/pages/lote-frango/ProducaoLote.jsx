@@ -36,7 +36,7 @@ export function ProducaoLote() {
   async function carregarProdutos() {
     try {
       const dados = await listarProdutos(granjaId)
-      setProdutos(dados ?? [])
+      setProdutos(dados.dados)
     } catch (error) {
       console.error("Erro ao carregar produtos:", error)
       setProdutos([])
@@ -46,7 +46,7 @@ export function ProducaoLote() {
   async function carregarProducaoLote() {
     try {
       const dados = await listarProducaoLote(loteFrangoId, granjaId)
-      setProducao(dados ?? [])
+      setProducao(dados)
     } catch (error) {
       console.error("Erro ao carregar as produções do lote:", error)
       setProducao([])
@@ -118,8 +118,16 @@ export function ProducaoLote() {
       label: "Identificação Lote de Frango",
       render: (item) => item.lote_frango?.identificacao?.toUpperCase() ?? "-"
     },
-    { key: "produto.tipo_produto.nome", label: "Produto" },
-    { key: "produto.tipo_unidade_medida.sigla", label: "Unidade" },
+    { 
+      key: "produto.tipo_produto.nome", 
+      label: "Produto",
+      render: (item) => item.produto?.tipo_produto?.nome ?? "-"
+    },
+    { 
+      key: "produto.tipo_unidade_medida.sigla", 
+      label: "Unidade",
+      render: (item) => item.produto?.tipo_unidade_medida?.sigla ?? "-"
+    },
     {
       key: "quantidade",
       label: "Quantidade",

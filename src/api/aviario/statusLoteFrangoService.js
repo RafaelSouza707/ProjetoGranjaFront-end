@@ -1,7 +1,11 @@
 import api from "../axios";
 
 export async function listarStatusFrango(granjaId) {
-    const response = await api.get(`/granja/status_lote_frango?granja_id=${granjaId}`);
+    const response = await api.get(`/granja/status_lote_frango`, {
+        params: {
+            granja_id: granjaId
+        }
+    });
     return response.data;
 }
 
@@ -21,6 +25,10 @@ export async function atualizarStatusLoteFrango(id, data) {
 }
 
 export async function deletarStatusLoteFrango(id, data){
-    await api.delete(`/granja/status_lote_frango/${id}?granja_id=${data.granja_id}`);
+    await api.delete(`/granja/status_lote_frango/${id}`, {
+        params: {
+            granja_id: data.granjaId
+        }
+    });
     return "";
 }

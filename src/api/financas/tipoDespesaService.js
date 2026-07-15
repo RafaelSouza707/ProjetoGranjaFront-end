@@ -22,7 +22,11 @@ export async function atualizarTipoDespesa(id, data) {
 
 export async function deletarTipoDespesa(id, data) {
     await api.delete(
-        `/financas/tipo_despesa/${id}?granja_id=${data.granja_id}`
+        `/financas/tipo_despesa/${id}`,{
+            params: {
+                granja_id: data.granja_id
+            }
+        }
     )
 
     return ""

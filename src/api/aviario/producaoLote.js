@@ -1,10 +1,11 @@
 import api from "../axios";
 
-export async function listarProducaoLote(loteFrangoId, granjaId) {
+export async function listarProducaoLote(loteFrangoId, granjaId, pagina = 1) {
     const response = await api.get("/venda_estoque/producao", {
         params: {
             granja_id: granjaId,
-            lote_frango_id: loteFrangoId
+            lote_frango_id: loteFrangoId,
+            pagina: pagina
         }
     })
     return response.data;

@@ -6,6 +6,11 @@ import ModalForm from "@/components/Genericos/ModalForm"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Trash2, Plus, X } from "lucide-react"
 
 import {
   listarVendas,
@@ -14,26 +19,35 @@ import {
   deletarVenda,
 } from "@/api/venda_Estoque/vendaService"
 
-import {
-  listarClientes,
-  criarCliente,
-  atualizarCliente,
-  deletarCliente,
-} from "@/api/usuario/clientesService"
-
+import { listarClientes, criarCliente, atualizarCliente, deletarCliente } from "@/api/usuario/clientesService"
 import { listarTipoVenda } from "@/api/venda_Estoque/tipoVendaService"
 import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
+import { listarProdutos } from "@/api/venda_Estoque/produtoService"
 
 import { formatarMoeda } from "@/utils/formatters"
 
 export default function Venda() {
   const { granjaId } = useParams()
 
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
+
   const [vendas, setVendas] = useState([])
   const [tiposVenda, setTiposVenda] = useState([])
   const [statusFinancas, setStatusFinancas] = useState([])
+  const [produtos, setProdutos] = useState([])
+  
   const [openVendaModal, setOpenVendaModal] = useState(false)
+
   const [vendaSelecionada, setVendaSelecionada] = useState(null)
+  const [formVenda, setFormVenda] = useState({
+    cliente_id: "",
+    tipo_venda_id: "",
+    status_financas_id: "",
+    data_venda: new Date().toISOString().split("T")[0],
+  })
+  const [itensVenda, setItensVenda] = useState([])
+
   const [openVendaDelete, setOpenVendaDelete] = useState(false)
   const [vendaDelete, setVendaDelete] = useState(null)
 
@@ -45,20 +59,39 @@ export default function Venda() {
 
   useEffect(() => {
     if (!granjaId) return
-
-    carregarVendas()
     carregarClientes()
     carregarTiposVenda()
     carregarStatusFinancas()
+    carregarProdutosGranja()
   }, [granjaId])
+
+  useEffect(() => {
+    carregarVendas()
+  }, [page])
 
   async function carregarVendas() {
     try {
-      const dados = await listarVendas(granjaId)
-      setVendas(dados ?? [])
+      const resposta = await listarVendas(granjaId, page)
+
+      const payload = resposta?.data ?? resposta
+
+      const listaVendas = Array.isArray(payload?.dados) ? payload.dados : (Array.isArray(payload) ? payload : [])
+      const paginacao = payload?.pagination ?? null
+
+      setVendas(listaVendas)
+      setPagination(paginacao)
     } catch (error) {
       console.error(error)
       setVendas([])
+    }
+  }
+
+  async function carregarProdutosGranja() {
+    try {
+      const dados = await listarProdutos(granjaId, -1)
+      setProdutos(dados.dados ?? [])
+    } catch (error) {
+      console.error(error)
     }
   }
 
@@ -68,7 +101,6 @@ export default function Venda() {
       setTiposVenda(dados ?? [])
     } catch (error) {
       console.error(error)
-      setTiposVenda([])
     }
   }
 
@@ -78,24 +110,69 @@ export default function Venda() {
       setStatusFinancas(dados ?? [])
     } catch (error) {
       console.error(error)
-      setStatusFinancas([])
     }
   }
 
   function novaVenda() {
     setVendaSelecionada(null)
+    setFormVenda({
+      cliente_id: "consumidor_final",
+      tipo_venda_id: "",
+      status_financas_id: "",
+      data_venda: new Date().toISOString().split("T")[0],
+    })
+    setItensVenda([{ produto_id: "", quantidade: "1", subtotal: "", valor_total: "" }])
     setOpenVendaModal(true)
   }
 
   function editarVenda(item) {
-    setVendaSelecionada({
-      ...item,
-      cliente_id: item.cliente_id,
-      tipo_venda_id: item.tipo_venda_id,
-      status_financas_id: item.status_financas_id,
-      valor_total: Number(item.valor_total),
+    setVendaSelecionada(item)
+    
+    setFormVenda({
+      cliente_id: item.cliente_id !== null && item.cliente_id !== undefined ? String(item.cliente_id) : "consumidor_final",
+      tipo_venda_id: item.tipo_venda_id !== null && item.tipo_venda_id !== undefined ? String(item.tipo_venda_id) : "",
+      status_financas_id: item.status_financas_id !== null && item.status_financas_id !== undefined ? String(item.status_financas_id) : "",
+      data_venda: item.data_venda || new Date().toISOString().split("T")[0],
     })
+    
+    const itensMapeados = item.itens?.map(i => {
+      const qtd = Number(i.quantidade ?? 1)
+      const subTot = Number(i.subtotal ?? i.valor ?? 0)
+      const valTotal = qtd > 0 ? (qtd * subTot).toFixed(2) : "0"
+
+      return { 
+        produto_id: i.produto_id !== null && i.produto_id !== undefined ? String(i.produto_id) : "", 
+        quantidade: String(qtd),
+        subtotal: String(subTot),
+        valor_total: String(valTotal)
+      }
+    }) ?? [{ produto_id: "", quantidade: "1", subtotal: "", valor_total: "" }]
+
+    setItensVenda(itensMapeados)
     setOpenVendaModal(true)
+  }
+
+  const adicionarItem = () => {
+    setItensVenda([...itensVenda, { produto_id: "", quantidade: "1", subtotal: "", valor_total: "" }])
+  }
+
+  const removerItem = (index) => {
+    const novosItens = itensVenda.filter((_, i) => i !== index)
+    setItensVenda(novosItens.length === 0 ? [{ produto_id: "", quantidade: "1", subtotal: "", valor_total: "" }] : novosItens)
+  }
+
+  const alterarItem = (index, campo, valor) => {
+    const novosItens = [...itensVenda]
+    novosItens[index][campo] = valor
+
+    const qtd = Number(novosItens[index].quantidade) || 0
+    const sub = Number(novosItens[index].subtotal) || 0
+
+    if (campo === "quantidade" || campo === "subtotal") {
+      novosItens[index].valor_total = (qtd * sub).toFixed(2)
+    }
+
+    setItensVenda(novosItens)
   }
 
   function excluirVenda(item) {
@@ -103,22 +180,38 @@ export default function Venda() {
     setOpenVendaDelete(true)
   }
 
-  async function salvarVenda(payload) {
-    const body = {
-      ...payload,
-      granja_id: Number(granjaId),
-      cliente_id: payload.cliente_id ? Number(payload.cliente_id) : null,
-      tipo_venda_id: Number(payload.tipo_venda_id),
-      status_financas_id: Number(payload.status_financas_id),
-      valor_total: Number(payload.valor_total)
+  async function salvarVenda(e) {
+    e.preventDefault()
+
+    const itensValidos = itensVenda.filter(item => item.produto_id && Number(item.quantidade) > 0)
+    if (itensValidos.length === 0) {
+      alert("Por favor, adicione pelo menos um produto válido com quantidade.")
+      return
     }
 
+    const valorTotalVenda = itensValidos.reduce((acc, item) => acc + (Number(item.valor_total) || 0), 0)
+
+    const payload = {
+      granja_id: Number(granjaId),
+      cliente_id: formVenda.cliente_id === "consumidor_final" ? null : Number(formVenda.cliente_id),
+      tipo_venda_id: formVenda.tipo_venda_id ? Number(formVenda.tipo_venda_id) : null,
+      status_financas_id: formVenda.status_financas_id ? Number(formVenda.status_financas_id) : null,
+      data_venda: formVenda.data_venda,
+      valor_total: valorTotalVenda,
+      itens: itensValidos.map(item => ({
+        produto_id: Number(item.produto_id),
+        quantidade: Number(item.quantidade),
+        subtotal: Number(item.subtotal) || 0
+      }))
+    }
+    
     try {
-      if (vendaSelecionada) {
-        await atualizarVenda(vendaSelecionada.id, granjaId, body)
+      if (vendaSelecionada && vendaSelecionada.id) {
+        await atualizarVenda(vendaSelecionada.id, granjaId, payload)
       } else {
-        await criarVenda(granjaId, body)
+        await criarVenda(granjaId, payload)
       }
+
       setOpenVendaModal(false)
       setVendaSelecionada(null)
       await carregarVendas()
@@ -145,36 +238,16 @@ export default function Venda() {
       setClientes(dados ?? [])
     } catch (error) {
       console.error(error)
-      setClientes([])
     }
-  }
-
-  function novoCliente() {
-    setClienteSelecionado(null)
-    setOpenClienteModal(true)
-  }
-
-  function editarCliente(cliente) {
-    setClienteSelecionado(cliente)
-    setOpenClienteModal(true)
-  }
-
-  function excluirCliente(cliente) {
-    setClienteDelete(cliente)
-    setOpenClienteDelete(true)
   }
 
   async function salvarCliente(payload) {
-    const body = {
-      ...payload,
-      granja_id: Number(granjaId)
-    }
-
+    const body = { ...payload, granja_id: Number(granjaId) }
     try {
       if (clienteSelecionado) {
-        await atualizarCliente(clienteSelecionado.id, body)
+        await atualizarCliente(clienteSelecionado.id, body, granjaId)
       } else {
-        await criarCliente(body)
+        await criarCliente(body, granjaId)
       }
       setOpenClienteModal(false)
       setClienteSelecionado(null)
@@ -189,7 +262,6 @@ export default function Venda() {
     try {
       await deletarCliente(clienteDelete.id, granjaId)
       setOpenClienteDelete(false)
-      setVendaDelete(null)
       await carregarClientes()
     } catch (error) {
       console.error(error)
@@ -201,72 +273,20 @@ export default function Venda() {
     {
       key: "cliente.nome",
       label: "Cliente",
-      render: (item) => item.cliente?.nome ?? "-"
+      render: (item) => item.cliente?.nome ?? "Consumidor Final"
     },
     { key: "tipo.nome", label: "Tipo Venda" },
     { key: "status.nome", label: "Status Financeiro" },
     {
       key: "valor_total",
-      label: "Valor",
+      label: "Valor Total",
       render: (item) => formatarMoeda(item.valor_total)
     },
     {
       key: "data_venda",
       label: "Data",
-      render: (item) =>
-        item.data_venda
-          ? item.data_venda.split("-").reverse().join("/")
-          : "-"
+      render: (item) => item.data_venda ? item.data_venda.split("-").reverse().join("/") : "-"
     },
-  ]
-
-  const camposVenda = [
-    {
-      name: "cliente_id",
-      label: "Cliente",
-      type: "select",
-      options: [
-        { value: "", label: "Consumidor Final" },
-        ...clientes.map(cliente => ({
-          value: cliente.id,
-          label: cliente.nome
-        }))
-      ]
-    },
-    {
-      name: "tipo_venda_id",
-      label: "Tipo Venda",
-      type: "select",
-      required: true,
-      options: tiposVenda.map(tipo => ({
-        value: tipo.id,
-        label: tipo.nome
-      }))
-    },
-    {
-      name: "status_financas_id",
-      label: "Status Financeiro",
-      type: "select",
-      required: true,
-      options: statusFinancas.map(status => ({
-        value: status.id,
-        label: status.nome
-      }))
-    },
-    {
-      name: "valor_total",
-      label: "Valor Total",
-      type: "number",
-      min: 0,
-      step: "0.01",
-      required: true
-    },
-    {
-      name: "data_venda",
-      label: "Data da Venda",
-      type: "date",
-      required: true
-    }
   ]
 
   const colunasCliente = [
@@ -284,17 +304,38 @@ export default function Venda() {
     { name: "email", label: "Email", type: "email", maxLength: 128 }
   ]
 
+  useEffect(() => {
+    if (openVendaModal && vendaSelecionada) {
+      const itensMapeados = vendaSelecionada.itens?.map(i => {
+        const qtd = Number(i.quantidade ?? 1)
+        const subTot = Number(i.subtotal ?? 0)
+        const valTotal = qtd > 0 ? (qtd * subTot).toFixed(2) : "0"
+
+        return { 
+          produto_id: i.produto_id !== null && i.produto_id !== undefined ? String(i.produto_id) : "", 
+          quantidade: String(qtd),
+          subtotal: String(subTot),
+          valor_total: String(valTotal)
+        }
+      }) ?? [{ produto_id: "", quantidade: "1", subtotal: "", valor_total: "" }]
+
+      setItensVenda(itensMapeados)
+    } else if (openVendaModal && !vendaSelecionada) {
+      setItensVenda([{ produto_id: "", quantidade: "1", subtotal: "", valor_total: "" }])
+    }
+  }, [openVendaModal, vendaSelecionada])
+
   return (
     <div className="space-y-6">
-      
       <Tabs defaultValue="vendas" className="w-full">
         <div className="flex items-center justify-between border-b pb-2">
-          <h1 className="text-2xl font-bold tracking-tight">Gestão Comercial</h1>
-          <TabsList>
-            <TabsTrigger value="vendas">Vendas</TabsTrigger>
-            <TabsTrigger value="clientes">Clientes</TabsTrigger>
-          </TabsList>
+          <h1 className="text-2xl font-bold tracking-tight">Vendas</h1>
         </div>
+        
+        <TabsList>
+          <TabsTrigger value="vendas">Vendas</TabsTrigger>
+          <TabsTrigger value="clientes">Clientes</TabsTrigger>
+        </TabsList>
 
         <TabsContent value="vendas" className="mt-4 space-y-4">
           <Tabela
@@ -305,6 +346,8 @@ export default function Venda() {
             onNovo={novaVenda}
             onEditar={editarVenda}
             onExcluir={excluirVenda}
+            pagination={pagination}
+            onPageChange={setPage}
           />
         </TabsContent>
 
@@ -314,24 +357,224 @@ export default function Venda() {
             colunas={colunasCliente}
             placeholderBusca="Buscar cliente..."
             textoBotao="+ Novo Cliente"
-            onNovo={novoCliente}
-            onEditar={editarCliente}
-            onExcluir={excluirCliente}
+            onNovo={() => { setClienteSelecionado(null); setOpenClienteModal(true); }}
+            onEditar={(item) => { setClienteSelecionado(item); setOpenClienteModal(true); }}
+            onExcluir={(item) => { setClienteDelete(item); setOpenClienteDelete(true); }}
           />
         </TabsContent>
       </Tabs>
 
-      <ModalForm
-        open={openVendaModal}
-        onOpenChange={(value) => {
-          setOpenVendaModal(value)
-          if (!value) setVendaSelecionada(null)
-        }}
-        titulo={vendaSelecionada ? "Editar Venda" : "Inserir Venda"}
-        campos={camposVenda}
-        dadosIniciais={vendaSelecionada}
-        onSalvar={salvarVenda}
-      />
+      {/* MODAL DE VENDA CUSTOMIZADO PURO */}
+      {openVendaModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200"
+          onClick={() => setOpenVendaModal(false)}
+        >
+          <div 
+            className="bg-white rounded-xl border border-slate-200 shadow-2xl flex flex-col max-h-[90vh] w-full zoom-in-95 animate-in duration-200"
+            style={{ maxWidth: '950px' }}
+            onClick={(e) => e.stopPropagation()} 
+          >
+            {/* Cabeçalho */}
+            <div className="flex items-center justify-between p-6 pb-3 border-b border-slate-100">
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                {vendaSelecionada ? "Editar Venda" : "Inserir Venda"}
+              </h2>
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="icon" 
+                className="size-8 rounded-full text-slate-400 hover:text-slate-600"
+                onClick={() => setOpenVendaModal(false)}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+            
+            <form onSubmit={salvarVenda} className="flex-1 overflow-y-auto p-6 py-4 space-y-5">
+              {/* Cabeçalho da Venda */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* CLIENTE */}
+                <div className="space-y-2">
+                  <Label>Cliente</Label>
+                  <Select 
+                    value={formVenda.cliente_id ? String(formVenda.cliente_id) : "consumidor_final"} 
+                    onValueChange={(val) => setFormVenda({...formVenda, cliente_id: val === "consumidor_final" ? "consumidor_final" : Number(val)})}
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Selecione um cliente">
+                        {formVenda.cliente_id === "consumidor_final" 
+                          ? "Consumidor Final" 
+                          : (clientes.find(c => String(c.id) === String(formVenda.cliente_id))?.nome || "Selecione um cliente")}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="consumidor_final">Consumidor Final</SelectItem>
+                      {clientes.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Data da Venda</Label>
+                  <Input type="date" required value={formVenda.data_venda} onChange={(e) => setFormVenda({...formVenda, data_venda: e.target.value})} />
+                </div>
+
+                {/* TIPO VENDA */}
+                <div className="space-y-2">
+                  <Label>Tipo Venda</Label>
+                  <Select 
+                    value={formVenda.tipo_venda_id ? String(formVenda.tipo_venda_id) : ""} 
+                    onValueChange={(val) => setFormVenda({...formVenda, tipo_venda_id: Number(val)})}
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Selecione um tipo">
+                        {tiposVenda.find(t => String(t.id) === String(formVenda.tipo_venda_id))?.nome || "Selecione um tipo"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiposVenda.map(t => <SelectItem key={t.id} value={String(t.id)}>{t.nome}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* STATUS FINANCEIRO */}
+                <div className="space-y-2">
+                  <Label>Status Financeiro</Label>
+                  <Select 
+                    value={formVenda.status_financas_id ? String(formVenda.status_financas_id) : ""} 
+                    onValueChange={(val) => setFormVenda({...formVenda, status_financas_id: Number(val)})}
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Selecione um status">
+                        {statusFinancas.find(s => String(s.id) === String(formVenda.status_financas_id))?.nome || "Selecione um status"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusFinancas.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.nome}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <hr className="border-slate-100" />
+
+              {/* SEÇÃO DINÂMICA DE ITENS (PRODUTOS) */}  
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-700">Produtos da Venda</h3>
+                  <Button type="button" variant="outline" size="sm" onClick={adicionarItem} className="gap-1">
+                    <Plus className="size-4" /> Add Produto
+                  </Button>
+                </div>
+
+                <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
+                  {itensVenda.map((item, index) => (
+                    <div key={index} className="flex items-end gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                      
+                      {/* PRODUTO */}
+                      <div className="flex-1 space-y-1.5">
+                        <Label className="text-xs">Produto</Label>
+                        <Select
+                          value={item.produto_id ? String(item.produto_id) : ""}
+                          onValueChange={(val) => alterarItem(index, "produto_id", val)}
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Escolha um produto">
+                              {item.produto_id 
+                                ? (() => {
+                                    const p = produtos.find(prod => String(prod.id) === String(item.produto_id));
+                                    return p ? `${p.tipo_produto?.nome} (${p.tipo_unidade_medida?.sigla})` : "Carregando...";
+                                  })()
+                                : "Escolha um produto"}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {produtos.map(p => (
+                              <SelectItem key={p.id} value={String(p.id)}>
+                                {p.tipo_produto?.nome} ({p.tipo_unidade_medida?.sigla})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* QUANTIDADE */}
+                      <div className="w-[95px] space-y-1.5">
+                        <Label className="text-xs">Quantidade</Label>
+                        <Input
+                          type="number"
+                          min="0.001"
+                          step="any"
+                          required
+                          className="bg-white"
+                          value={item.quantidade}
+                          onChange={(e) => alterarItem(index, "quantidade", e.target.value)}
+                        />
+                      </div>
+
+                      {/* PREÇO UNITÁRIO */}
+                      <div className="w-[110px] space-y-1.5">
+                        <Label className="text-xs">Preço Unit. (R$)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          required
+                          className="bg-white"
+                          placeholder="0,00"
+                          value={item.subtotal}
+                          onChange={(e) => alterarItem(index, "subtotal", e.target.value)}
+                        />
+                      </div>
+
+                      {/* VALOR TOTAL DO ITEM (SUBTOTAL) */}
+                      <div className="w-[110px] space-y-1.5">
+                        <Label className="text-xs">Subtotal (R$)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          className="bg-slate-100 font-semibold"
+                          readOnly
+                          value={item.valor_total}
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={() => removerItem(index)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* VALOR TOTAL GERAL DA VENDA EM TEMPO REAL */}
+                <div className="flex justify-end items-center gap-2 pt-2 pr-1">
+                  <span className="text-sm font-medium text-slate-600">Valor Total da Venda:</span>
+                  <span className="text-lg font-bold text-slate-900">
+                    {formatarMoeda(
+                      itensVenda.reduce((acc, item) => acc + (Number(item.valor_total) || 0), 0)
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 mt-2">
+                <Button type="button" variant="outline" onClick={() => setOpenVendaModal(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">Salvar Venda</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={openVendaDelete}
@@ -344,10 +587,7 @@ export default function Venda() {
 
       <ModalForm
         open={openClienteModal}
-        onOpenChange={(value) => {
-          setOpenClienteModal(value)
-          if (!value) setClienteSelecionado(null)
-        }}
+        onOpenChange={(value) => { setOpenClienteModal(value); if (!value) setClienteSelecionado(null); }}
         titulo={clienteSelecionado ? "Editar Cliente" : "Novo Cliente"}
         campos={camposCliente}
         dadosIniciais={clienteSelecionado}
@@ -362,7 +602,6 @@ export default function Venda() {
         descricao={`Deseja realmente excluir o cliente "${clienteDelete?.nome}"?`}
         textoConfirmar="Excluir"
       />
-
     </div>
   )
 }

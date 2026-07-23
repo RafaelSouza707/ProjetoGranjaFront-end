@@ -16,9 +16,13 @@ import { listarLoteRacoes } from "@/api/aviario/loteRacaoService"
 import { formatarData } from "@/components/utils/DataFormater"
 
 import { formatarQuilos } from "@/components/utils/FormatarQuilos"
+import { handleApiError } from "@/utils/handleApiError"
 
 export function ConsumoLote() {
   const { granjaId, loteFrangoId } = useParams()
+
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
 
   const [consumos, setConsumos] = useState([])
   const [open, setOpen] = useState(false)
@@ -33,13 +37,18 @@ export function ConsumoLote() {
     carregarLotesRacao()
   }, [granjaId, loteFrangoId])
 
+
+  useEffect(() => {
+    carregarConsumos()
+  }, [page])
+
   async function carregarConsumos() {
     try {
-      const dados = await listarConsumoLoteDiario(loteFrangoId, granjaId)
-      setConsumos(dados ?? [])
+      const dados = await listarConsumoLoteDiario(loteFrangoId, granjaId, page)
+      setConsumos(dados.dados ?? [])
+      setPagination(dados.pagination)
     } catch (error) {
-      console.error("Erro ao carregar consumos:", error)
-      setConsumos([])
+      handleApiError(error)
     }
   }
 
@@ -48,8 +57,7 @@ export function ConsumoLote() {
       const dados = await listarLoteRacoes(granjaId)
       setLotesRacao(dados ?? [])
     } catch (error) {
-      console.error("Erro ao carregar lotes de ração:", error)
-      setLotesRacao([])
+      handleApiError(error)
     }
   }
 
@@ -91,7 +99,7 @@ export function ConsumoLote() {
       setConsumoSelecionado(null)
       carregarConsumos()
     } catch (error) {
-      console.error("Erro ao salvar consumo:", error)
+      handleApiError(error)
     }
   }
 
@@ -104,7 +112,7 @@ export function ConsumoLote() {
       setConsumoDelete(null)
       carregarConsumos()
     } catch (error) {
-      console.error("Erro ao excluir consumo:", error)
+      handleApiError(error)
     }
   }
 
@@ -161,6 +169,8 @@ export function ConsumoLote() {
         onNovo={novoConsumo}
         onEditar={editarConsumo}
         onExcluir={excluirConsumo}
+        pagination={pagination}
+        onPageChange={setPage}
       />
 
       <ModalForm

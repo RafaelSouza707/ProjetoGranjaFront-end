@@ -1,10 +1,11 @@
 import api from "../axios";
 
-export async function listarMortalidade(loteFrangoId, granjaId) {
+export async function listarMortalidade(loteFrangoId = null, granjaId, pagina = -1) {
     const response = await api.get("/granja/mortalidade", {
         params: {
             granja_id: granjaId,
-            lote_frango_id: loteFrangoId
+            lote_frango_id: loteFrangoId,
+            pagina: pagina
         }
     })
     return response.data;
@@ -34,11 +35,19 @@ export async function atualizarMortalidade(id, loteFrangoId, granjaId, data) {
     return response.data;
 }
 
-export async function deletarMortalidade(loteFrangoId, granjaId, id) {
+export async function deletarMortalidade(granjaId, id) {
     await api.delete(`/granja/mortalidade/${id}`,{
         params: {
             granja_id: granjaId,
-            lote_frango_id: loteFrangoId
         }
     })
+}
+
+export async function listarGraficoMortalidadeGranja(granjaId) {
+    const res = await api.get("/granja/grafico_mortalidade_granja", {
+        params: {
+            granja_id: granjaId
+        }
+    })
+    return res.data;
 }

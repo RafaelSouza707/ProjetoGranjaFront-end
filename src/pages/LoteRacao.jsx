@@ -1,87 +1,84 @@
 import { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
+import { Scale, TrendingDown, Clock, AlertCircle } from "lucide-react"
 
 import Tabela from "@/components/Genericos/Tabela"
-import FinanceiroCards from "@/components/Financas/FinanceiroCards"
 import ModalForm from "@/components/Genericos/ModalForm"
-import { useParams } from "react-router-dom"
-
 import { listarLoteRacoes, criarLoteRacao, atualizarLoteRacao, deletarLoteRacao, listarCardsLoteRacao } from "@/api/aviario/loteRacaoService"
 import { listarTipoRacao } from "@/api/aviario/tipoRacaoService"
 import { formatarQuilos } from "@/components/utils/FormatarQuilos"
+import { handleApiError } from "@/utils/handleApiError"
 
 export default function LoteRacao() {
-
   const { granjaId } = useParams()
 
+  const [loteRacao, setLoteRacao] = useState([])
+  const [tipoRacao, setTipoRacao] = useState([])
+  const [cardLoteRacao, setCardLoteRacao] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loteRacaoSelecionado, setLoteRacaoSelecionado] = useState(null)
+
   async function carregarDados() {
-    await Promise.all([
-      carregarLoteRacao(),
-      carregarCards(),
-      carregarTipoRacao(),
-    ])
+    try {
+      await Promise.all([
+        carregarLoteRacao(),
+        carregarCards(),
+        carregarTipoRacao(),
+      ])
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const colunas = [
-    {
-      key: "id",
-      label: "#",
-    },
-    {
-      key: "tipo_racao.nome",
-      label: "Tipo de Ração".toUpperCase(),
-    },
-    {
-      key: "fornecedor",
-      label: "Fornecedor".toUpperCase(),
-    },
-    {
-      key: "quilos",
-      label: "Quilo".toUpperCase(),
-      render: (item) => formatarQuilos(item.quilos)
-    },
-  ]
-
-  const [ loteRacao, setLoteRacao ] = useState([])
   async function carregarLoteRacao() {
     try {
-      const dados = await listarLoteRacoes(granjaId);
-      setLoteRacao(dados);
+      const dados = await listarLoteRacoes(granjaId)
+      setLoteRacao(dados ?? [])
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
-  const [tipoRacao, setTipoRacao] = useState([])
   async function carregarTipoRacao() {
     try {
-      const dados = await listarTipoRacao(granjaId);
-      setTipoRacao(dados);
+      const dados = await listarTipoRacao(granjaId)
+      setTipoRacao(dados ?? [])
     } catch (error) {
-      console.error("Erro ao carregar tipos de racao",error)
-      setTipoRacao([])
+      handleApiError(error)
     }
   }
+
+  async function carregarCards() {
+    try {
+      const dados = await listarCardsLoteRacao(granjaId)
+      setCardLoteRacao(dados ?? {})
+    } catch (error) {
+      handleApiError(error)
+    }
+  }
+
+  useEffect(() => {
+    carregarDados()
+  }, [granjaId])
+
+  const colunas = [
+    { key: "id", label: "#" },
+    { key: "tipo_racao.nome", label: "TIPO DE RAÇÃO", render: (item) => item.tipo_racao?.nome?.toUpperCase() ?? "-" },
+    { key: "fornecedor", label: "FORNECEDOR", render: (item) => item.fornecedor?.toUpperCase() ?? "-" },
+    { key: "quilos", label: "QUILOS", render: (item) => formatarQuilos(item.quilos) },
+  ]
 
   const campos = [
     {
       name: "tipo_racao_id",
       label: "Tipo de Ração",
       type: "select",
-      options: tipoRacao.map(t => ({
-        value: t.id,
-        label: t.nome.toUpperCase()
-      }))
+      options: tipoRacao.map(t => ({ value: t.id, label: t.nome.toUpperCase() })),
+      required: true
     },
-    {
-      name: "fornecedor",
-      label: "Fornecedor",
-      type: "text"
-    },
-    {
-      name: "quilos",
-      label: "Quilos",
-      type: "number"
-    },
+    { name: "fornecedor", label: "Fornecedor", type: "text" },
+    { name: "quilos", label: "Quilos", type: "number", min: 0, required: true },
   ]
 
   function toNumberOrNull(value) {
@@ -90,28 +87,14 @@ export default function LoteRacao() {
     return isNaN(n) ? null : n
   }
 
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(true)
-
-  const [loteRacaoSelecionado, setLoteRacaoSelecionado] = useState(null)
-
-  const [cardLoteRacao, setCardLoteRacao] = useState(null);
-  async function carregarCards() {
-    try {
-      const dados = await listarCardsLoteRacao(granjaId);
-      setCardLoteRacao(dados);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function apagarLoteRacao(id) {
-    await deletarLoteRacao(id, granjaId);
-
-    await carregarLoteRacao()
-    await carregarCards()
+    try {
+      await deletarLoteRacao(id, granjaId)
+      await carregarLoteRacao()
+      await carregarCards()
+    } catch (error) {
+      handleApiError(error)
+    }
   }
 
   async function novoLoteRacao() {
@@ -119,10 +102,10 @@ export default function LoteRacao() {
     setOpen(true)
   }
 
-  function editarLoteRacao(loteRacao) {
+  function editarLoteRacao(item) {
     setLoteRacaoSelecionado({
-      ...loteRacao,
-      tipo_racao_id: loteRacao.tipo_racao.id,
+      ...item,
+      tipo_racao_id: item.tipo_racao?.id,
     })
     setOpen(true)
   }
@@ -131,7 +114,8 @@ export default function LoteRacao() {
     try {
       const dados = {
         ...payload,
-        tipo_racao_id: toNumberOrNull(payload.tipo_racao.id),
+        tipo_racao_id: toNumberOrNull(payload.tipo_racao_id),
+        quilos: toNumberOrNull(payload.quilos),
         granja_id: toNumberOrNull(granjaId)
       }
 
@@ -147,47 +131,75 @@ export default function LoteRacao() {
       await carregarLoteRacao()
       await carregarCards()
     } catch (error) {
-      console.error("Erro ao salvar lote ração:", error)
+      handleApiError(error)
     }
   }
 
-  useEffect(() => {
-    carregarDados()
-  }, []);
-
   if (loading) {
-    return <p>Carregando...</p>
+    return <div className="p-4 text-xs text-slate-400">Carregando lotes de ração...</div>
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-4xl font-bold mb-6">
-        Lotes de Ração
-      </h1>
+    <div className="p-4 space-y-4">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight">Lotes de Ração</h1>
+        <p className="text-sm text-muted-foreground">Controle de estoque, consumo e previsão de suprimentos.</p>
+      </div>
       
-      <FinanceiroCards cards={[
-        {
-          titulo: "Estoque de Ração",
-          valor: formatarQuilos(cardLoteRacao?.quantidade_total_racao_granja ?? 0),
-          cor: "text-red-600",
-          descricao: "Distribuídos em " + cardLoteRacao?.quantidade_lotes_racao + " lotes" ?? 0,
-        },
-        {
-          titulo: "Consumo do mês",
-          valor: formatarQuilos(cardLoteRacao?.total_consumido_mes?.mes ?? 0),
-          descricao: "Média diária: " + formatarQuilos(cardLoteRacao?.total_consumido_mes?.diaria) ?? "",
-        },
-        {
-          titulo: "Próximo lote de ração a acabar",
-          valor: cardLoteRacao?.lote_menor_quantiade?.tipo_racao ?? 0,
-          descricao: "Restante: " + formatarQuilos(cardLoteRacao?.lote_menor_quantiade?.quantidade ?? ""),
-        },
-        {
-          titulo: "Previsão para fim do estoque em dias",
-          valor: cardLoteRacao?.previsao + " dias" ?? "N/D",
-          descricao: "É uma previsão superficial *",
-        },
-      ]}/>
+      {/* CARDS DE MÉTRICAS COMPACTOS E VISUAIS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        
+        {/* Estoque */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className="text-xs font-medium text-slate-500">Estoque de Ração</span>
+            <p className="text-lg font-bold text-red-600">{formatarQuilos(cardLoteRacao?.quantidade_total_racao_granja ?? 0)}</p>
+            <span className="text-[10px] text-slate-400">Distribuídos em {cardLoteRacao?.quantidade_lotes_racao ?? 0} lotes</span>
+          </div>
+          <div className="p-2.5 bg-red-50 rounded-full text-red-600">
+            <Scale className="size-5" />
+          </div>
+        </div>
+
+        {/* Consumo do Mês */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className="text-xs font-medium text-slate-500">Consumo do Mês</span>
+            <p className="text-lg font-bold text-slate-900">{formatarQuilos(cardLoteRacao?.total_consumido_mes?.mes ?? 0)}</p>
+            <span className="text-[10px] text-slate-400">Média: {formatarQuilos(cardLoteRacao?.total_consumido_mes?.diaria ?? 0)}/dia</span>
+          </div>
+          <div className="p-2.5 bg-slate-100 rounded-full text-slate-600">
+            <TrendingDown className="size-5" />
+          </div>
+        </div>
+
+        {/* Menor Lote */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className="text-xs font-medium text-slate-500">Menor Lote em Estoque</span>
+            <p className="text-base font-bold text-amber-600 truncate max-w-[140px]" title={cardLoteRacao?.lote_menor_quantiade?.tipo_racao}>
+              {cardLoteRacao?.lote_menor_quantiade?.tipo_racao || "N/D"}
+            </p>
+            <span className="text-[10px] text-slate-400">Restante: {formatarQuilos(cardLoteRacao?.lote_menor_quantiade?.quantidade ?? 0)}</span>
+          </div>
+          <div className="p-2.5 bg-amber-50 rounded-full text-amber-600">
+            <AlertCircle className="size-5" />
+          </div>
+        </div>
+
+        {/* Previsão */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className="text-xs font-medium text-slate-500">Previsão de Fim do Estoque</span>
+            <p className="text-lg font-bold text-blue-600">{cardLoteRacao?.previsao ? `${cardLoteRacao.previsao} dias` : "N/D"}</p>
+            <span className="text-[10px] text-slate-400">Estimativa superficial *</span>
+          </div>
+          <div className="p-2.5 bg-blue-50 rounded-full text-blue-600">
+            <Clock className="size-5" />
+          </div>
+        </div>
+
+      </div>
 
       <Tabela
         dados={loteRacao}
@@ -202,11 +214,7 @@ export default function LoteRacao() {
       <ModalForm
         open={open}
         onOpenChange={setOpen}
-        titulo={
-          loteRacaoSelecionado
-          ? "Editar Lote de Ração"
-          : "Novo Lote de Ração"
-        }
+        titulo={loteRacaoSelecionado ? "Editar Lote de Ração" : "Novo Lote de Ração"}
         campos={campos}
         dadosIniciais={loteRacaoSelecionado}
         onSalvar={salvarLoteRacao}

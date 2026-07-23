@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 
 import Tabela from "@/components/Genericos/Tabela"
-import FinanceiroCards from "@/components/Financas/FinanceiroCards"
+import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
 
 import { formatarMoeda } from "@/utils/formatters"
@@ -59,7 +59,7 @@ export default function Receitas() {
       const dados = await listarVendas(granjaId)
       setVenda(dados)
     } catch (error) {
-      console.error("Erro ao carregar vendas: ", error)
+      handleApiError(error)
     }
   }
 
@@ -68,7 +68,7 @@ export default function Receitas() {
       const dados = await listarTiposReceitas(granjaId)
       setTipoReceita(dados)
     } catch (error) {
-      console.error("Erro ao carregar tipos de receita:", error)
+      handleApiError(error)
     }
   }
 
@@ -77,7 +77,7 @@ export default function Receitas() {
       const dados = await listarStatusFinancas(granjaId)
       setStatusFinancas(dados)
     } catch (error) {
-      console.error("Erro ao carregar status de financas:", error)
+      handleApiError(error)
     }
   }
 
@@ -88,16 +88,17 @@ export default function Receitas() {
       setReceitas(dados.dados)
       setPagination(dados.pagination)
     } catch (error) {
-      console.error("Erro ao carregar receitas:", error)
+      handleApiError(error)
     }
   }
 
   async function carregarCards() {
     try {
       const dados = await cardReceitaGranja(granjaId)
+      console.log(dados)
       setCardsReceitas(dados)
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -118,7 +119,7 @@ export default function Receitas() {
       await carregarReceitas()
       await carregarCards()
     } catch (error) {
-      console.error("Erro ao excluir receita:", error)
+      handleApiError(error)
     }
   }
 
@@ -150,8 +151,9 @@ export default function Receitas() {
 
       await carregarReceitas()
       await carregarCards()
+      
     } catch (error) {
-      console.error("Erro ao salvar receita:", error)
+      handleApiError(error)
     }
   }
 
@@ -243,7 +245,7 @@ const colunas = [
         Receitas
       </h1>
 
-      <FinanceiroCards
+      <GenericCards
         cards={[
           {
             titulo: "Total arrecadado no mês",

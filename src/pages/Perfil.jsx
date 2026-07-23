@@ -36,7 +36,7 @@ export default function Perfil() {
         confirmarSenha: "",
       })
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     } finally {
       setLoading(false)
     }
@@ -45,10 +45,10 @@ export default function Perfil() {
   async function carregarSexo() {
     try {
       const dados = await listarSexo()
-      setSexos(dados)
+      setSexos(dados ?? [])
+
     } catch (error) {
-      console.error("Erro ao carregar sexos:", error)
-      setSexos([])
+      handleApiError(error)
     }
   }
 
@@ -96,8 +96,7 @@ export default function Perfil() {
 
       await carregarUsuario()
     } catch (error) {
-      console.error(error)
-      alert("Erro ao atualizar usuário")
+      handleApiError(error)
     }
   }
 

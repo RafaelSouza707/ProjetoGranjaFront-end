@@ -63,7 +63,7 @@ export default function GranjaPage() {
 
   async function carregar() {
     const data = await listarGranjas()
-    setGranjas(data)
+    setGranjas(data ?? [])
   }
 
   useEffect(() => {

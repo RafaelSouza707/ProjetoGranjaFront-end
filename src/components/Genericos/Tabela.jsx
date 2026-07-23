@@ -51,7 +51,6 @@ export default function Tabela({
   onVendas,
   pagination,
   onPageChange,
-  onCliente,
 }) {
   const [busca, setBusca] = useState("")
 
@@ -198,7 +197,7 @@ export default function Tabela({
                 <TableCell>
                   <div className="flex justify-center gap-1">
                     {onTelaLotesFrangos && (
-                      <CTooltip content="Lote de Frangos">
+                      <CTooltip content="Lote de Frangos" animation={false}>
                         <Button
                         variant="ghost"
                         size="icon"
@@ -212,7 +211,7 @@ export default function Tabela({
                     }
 
                     {onProdutos &&(
-                      <CTooltip content="Produtos">
+                      <CTooltip content="Produtos" animation={false}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -225,7 +224,7 @@ export default function Tabela({
                     )}
 
                     {onVendas && (
-                      <CTooltip content="Vendas">
+                      <CTooltip content="Vendas" animation={false}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -238,7 +237,7 @@ export default function Tabela({
                     )}
 
                     {onFinancas && (
-                      <CTooltip content="Finanças">
+                      <CTooltip content="Finanças" animation={false}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -251,7 +250,7 @@ export default function Tabela({
                     )}
 
                     {onLoteRacao && (
-                      <CTooltip content="Lote de Ração">
+                      <CTooltip content="Lote de Ração" animation={false}>
                         <Button
                         variant="ghost"
                         size="icon"
@@ -264,7 +263,7 @@ export default function Tabela({
                     )}
 
                     {onEditar && (
-                      <CTooltip content="Editar nome da Granja">
+                      <CTooltip content="Editar nome da Granja" animation={false}>
                         <Button
                         variant="ghost"
                           size="icon"
@@ -277,7 +276,7 @@ export default function Tabela({
                     )}
 
                     {onExcluir && (
-                      <CTooltip content="Excluir">
+                      <CTooltip content="Excluir"  animation={false}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -292,7 +291,7 @@ export default function Tabela({
 
                     {
                       onConfigurar && (
-                        <CTooltip content="Configuração">
+                        <CTooltip content="Configuração" animation={false}>
                           <Button
                             variant="ghost"
                             size="icon"

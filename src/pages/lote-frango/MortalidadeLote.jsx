@@ -16,6 +16,9 @@ import { formatarData } from "@/components/utils/DataFormater"
 export function MortalidadeLote() {
   const { granjaId, loteFrangoId } = useParams()
 
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
+
   const [mortalidades, setMortalidades] = useState([])
   const [open, setOpen] = useState(false)
   const [mortalidadeSelecionada, setMortalidadeSelecionada] = useState(null)
@@ -27,13 +30,17 @@ export function MortalidadeLote() {
     carregarMortalidade()
   }, [granjaId, loteFrangoId])
 
+  useEffect(() => {
+    carregarMortalidade()
+  }, [page])
+
   async function carregarMortalidade() {
     try {
-      const dados = await listarMortalidade(loteFrangoId, granjaId)
-      setMortalidades(dados ?? [])
+      const dados = await listarMortalidade(loteFrangoId, granjaId, page)
+      setMortalidades(dados.dados ?? [])
+      setPagination(dados.pagination)
     } catch (error) {
-      console.error("Erro ao carregar mortalidades:", error)
-      setMortalidades([])
+        handleApiError(error)
     }
   }
 
@@ -70,7 +77,7 @@ export function MortalidadeLote() {
       setMortalidadeSelecionada(null)
       carregarMortalidade()
     } catch (error) {
-      console.error("Erro ao salvar mortalidade:", error)
+      handleApiError(error)
     }
   }
 
@@ -83,12 +90,12 @@ export function MortalidadeLote() {
     if (!mortalidadeDelete) return
 
     try {
-      await deletarMortalidade(loteFrangoId, granjaId, mortalidadeDelete.id)
+      await deletarMortalidade(granjaId, mortalidadeDelete.id)
       setOpenDelete(false)
       setMortalidadeDelete(null)
       carregarMortalidade()
     } catch (error) {
-      console.error("Erro ao excluir mortalidade:", error)
+      handleApiError(error)
     }
   }
 
@@ -117,6 +124,8 @@ export function MortalidadeLote() {
         onNovo={novaMortalidade}
         onEditar={editarMortalidade}
         onExcluir={excluirMortalidade}
+        pagination={pagination}
+        onPageChange={setPage}
       />
 
       <ModalForm

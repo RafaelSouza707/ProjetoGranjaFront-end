@@ -48,11 +48,10 @@ const { granjaId } = useParams()
   async function carregarProdutos() {
     try {
       const dados = await listarProdutos(granjaId, page)
-      setProdutos(dados.dados)
+      setProdutos(dados.dados ?? [])
       setPagination(dados.pagination)
     } catch (error) {
-      console.error("Erro ao carregar produtos:", error)
-      setProdutos([])
+      handleApiError(error)
     }
   }
 
@@ -61,8 +60,7 @@ const { granjaId } = useParams()
       const dados = await listarTipoProduto(granjaId)
       setTipoProduto(dados ?? [])
     } catch (error) {
-      console.error("Erro ao carregar tipos de produto:", error)
-      setTipoProduto([])
+      handleApiError(error)
     }
   }
 
@@ -71,8 +69,7 @@ const { granjaId } = useParams()
     const dados = await listarTipoUnidadeMedida(granjaId)
     setTipoUnidadeMedida(dados ?? [])
   } catch (error) {
-    console.error("Erro ao carregar unidades de medida:", error)
-    setTipoUnidadeMedida([])
+    handleApiError(error)
   }
   }
 
@@ -122,7 +119,7 @@ const { granjaId } = useParams()
 
       await carregarProdutos()
     } catch (error) {
-      console.error("Erro ao salvar produto:", error)
+      handleApiError(error)
     }
   }
 
@@ -139,7 +136,7 @@ const { granjaId } = useParams()
 
         await carregarProdutos()
       } catch (error) {
-        console.error("Erro ao excluir produto:", error)
+        handleApiError(error)
       }
   }
 

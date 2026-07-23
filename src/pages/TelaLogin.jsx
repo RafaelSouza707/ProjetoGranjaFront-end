@@ -47,8 +47,8 @@ export default function Login() {
 
         setModo("login")
       }
-    } catch (err) {
-      console.error(err)
+    } catch (error) {
+      handleApiError(error)
     }
   }
 

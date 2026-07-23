@@ -54,10 +54,32 @@ function TabsTrigger({
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 aria-disabled:pointer-events-none aria-disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
-        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        // Layout Base & Tipografia
+        "relative inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200",
+        "text-muted-foreground hover:text-foreground/90",
+        "disabled:pointer-events-none disabled:opacity-40 aria-disabled:pointer-events-none aria-disabled:opacity-40",
+        
+        // Alinhamento Vertical
+        "group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start",
+        
+        // Estilo Texto Ativo (Escuta múltiplos estados possíveis para não errar)
+        "data-[selected]:text-foreground data-[state=active]:text-foreground data-active:text-foreground font-semibold",
+        
+        // Efeito de Foco (Acessibilidade)
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 rounded-sm",
+        
+        // Ícones internos
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4 [&_svg]:opacity-70 [&_svg]:transition-opacity",
+        "data-[selected]:[&_svg]:opacity-100 data-[state=active]:[&_svg]:opacity-100 data-active:[&_svg]:opacity-100",
+        
+        // A Linha Indicadora Animada no Rodapé
+        "after:absolute after:bottom-1 after:h-[2px] after:w-full after:bg-primary after:transform after:scale-x-0 after:transition-transform after:duration-200",
+        "data-[selected]:after:scale-x-100 data-[state=active]:after:scale-x-100 data-active:after:scale-x-100",
+        
+        // Suporte para Abas Verticais
+        "group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:right-0 group-data-vertical/tabs:after:w-[2px] group-data-vertical/tabs:after:h-full group-data-vertical/tabs:after:scale-x-100 group-data-vertical/tabs:after:scale-y-0",
+        "data-[selected]:group-data-vertical/tabs:after:scale-y-100 data-[state=active]:group-data-vertical/tabs:after:scale-y-100 data-active:group-data-vertical/tabs:after:scale-y-100",
+        
         className
       )}
       {...props} />

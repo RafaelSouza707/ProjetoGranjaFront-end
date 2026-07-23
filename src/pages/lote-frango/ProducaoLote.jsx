@@ -16,9 +16,13 @@ import { listarProdutos } from "@/api/venda_Estoque/produtoService"
 import { formatarData } from "@/components/utils/DataFormater"
 
 import { parseQuantidade, formatarQuantidade } from "@/components/utils/converterQuantidade"
+import { handleApiError } from "@/utils/handleApiError"
 
 export function ProducaoLote() {
   const { granjaId, loteFrangoId } = useParams()
+
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
 
   const [producao, setProducao] = useState([])
   const [open, setOpen] = useState(false)
@@ -29,27 +33,31 @@ export function ProducaoLote() {
 
   useEffect(() => {
     if (!granjaId) return
-    carregarProducaoLote()
     carregarProdutos()
   }, [granjaId, loteFrangoId])
 
+  useEffect(() => {
+    carregarProducaoLote()
+  }, [page])
+
   async function carregarProdutos() {
     try {
-      const dados = await listarProdutos(granjaId)
+      const dados = await listarProdutos(granjaId, -1)
       setProdutos(dados.dados)
+
     } catch (error) {
-      console.error("Erro ao carregar produtos:", error)
-      setProdutos([])
+      handleApiError(error)
     }
   }
 
   async function carregarProducaoLote() {
     try {
-      const dados = await listarProducaoLote(loteFrangoId, granjaId)
-      setProducao(dados)
+      const dados = await listarProducaoLote(loteFrangoId, granjaId, page)
+      setProducao(dados.dados ?? [])
+      setPagination(dados.pagination)
+      
     } catch (error) {
-      console.error("Erro ao carregar as produções do lote:", error)
-      setProducao([])
+      handleApiError(error)
     }
   }
 
@@ -95,7 +103,7 @@ export function ProducaoLote() {
       setProducaoSelecionada(null)
       carregarProducaoLote()
     } catch (error) {
-      console.error("Erro ao salvar produção:", error)
+      handleApiError(error)
     }
   }
 
@@ -108,7 +116,7 @@ export function ProducaoLote() {
       setProducaoDelete(null)
       carregarProducaoLote()
     } catch (error) {
-      console.error("Erro ao excluir produção:", error)
+      handleApiError(error)
     }
   }
 
@@ -181,6 +189,8 @@ export function ProducaoLote() {
         onNovo={novaProducaoLote}
         onEditar={editarProducaoLote}
         onExcluir={excluirProducaoLote}
+        pagination={pagination}
+        onPageChange={setPage}
       />
 
       <ModalForm

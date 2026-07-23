@@ -14,16 +14,15 @@ import Despesas from "@/pages/Despesas"
 import Perfil from "@/pages/Perfil"
 import LoteRacao from "@/pages/LoteRacao"
 import Venda from "@/pages/Venda"
-import Cliente from "@/pages/Cliente"
+import MortalidadeGranja from '@/pages/MortalidadeGranja'
 
 export default function AppRoutes() {
   return (
     <Routes>
+        <Route path="tela_login" element={<TelaLogin />} />
+        
       <Route path="/" element={<Layout />}>
         <Route index element={<TelaGraja />} />
-
-        <Route path="tela_login" element={<TelaLogin />} />
-
         <Route path="equipe" element={<Equipe />} />
         <Route path="configuracoes/:granjaId" element={<Configuracoes />} />
         <Route path="granja/:granjaId/lotes_frangos" element={<LotesFrango />} />
@@ -35,7 +34,7 @@ export default function AppRoutes() {
         <Route path="granja/:granjaId/financas/receita" element={<Receitas/>} />
         <Route path="granja/:granjaId/financas/despesa" element={<Despesas/>} />
         <Route path="usuario/perfil" element={<Perfil/>} />
-        <Route path="granja/:granjaId/clientes" element={Cliente} />
+        <Route path="granja/:granjaId/mortalidade-granja" element={< MortalidadeGranja/>}  />
       </Route>
     </Routes>
   )

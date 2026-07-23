@@ -1,10 +1,11 @@
 import api from "../axios";
 
-export async function listarConsumoLoteDiario(loteFrangoId, granjaId) {
+export async function listarConsumoLoteDiario(loteFrangoId, granjaId, pagina) {
     const response = await api.get("/granja/consumo_lote_diaria", {
         params: {
             granja_id: granjaId,
             lote_frango_id: loteFrangoId,
+            pagina: pagina
         }
     });
     return response.data;

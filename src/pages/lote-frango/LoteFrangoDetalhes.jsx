@@ -12,9 +12,6 @@ import { MortalidadeLote } from "@/pages/lote-frango/MortalidadeLote"
 import { ProducaoLote } from "@/pages/lote-frango/ProducaoLote"
 import { ResumoLote } from "@/pages/lote-frango/ResumoLote"
 
-import { buscarLoteFrango } from "@/api/aviario/loteFrangoService"
-import { useEffect, useState } from "react"
-
 export default function LoteFrangoDetalhes() {
   const { granjaId, loteFrangoId, identificacao } = useParams()
 

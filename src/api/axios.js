@@ -5,4 +5,16 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.response.use(
+  response => response,
+
+  error => {
+    const mensagem = 
+      error.response?.data?.error?.message ||
+      "Erro inesperado."
+
+      return Promise.reject(new Error(mensagem))
+  }
+)
+
 export default api;

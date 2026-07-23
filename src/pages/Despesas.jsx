@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import Tabela from "@/components/Genericos/Tabela"
-import FinanceiroCards from "@/components/Financas/FinanceiroCards"
+import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
 import { useParams } from "react-router-dom"
 
@@ -11,6 +11,7 @@ import { formatarMoeda } from "@/utils/formatters"
 import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
 import { listarLoteFrangos } from "@/api/aviario/loteFrangoService"
 import { renderTextoColuna } from "@/components/utils/renderers"
+import { handleApiError } from "@/utils/handleApiError"
 
 export default function Despesas() {
 
@@ -25,13 +26,18 @@ export default function Despesas() {
       carregarTiposDespesas(),
       carregarStatus(),
       carregarLoteFrangos(),
-    ])
+    ])  
   }
 
   async function carregarDespesas() {
-    const dados = await listarDespesas(granjaId, page);
-    setDespesas(dados.dados)
-    setPagination(dados.pagination)
+    try {
+      const dados = await listarDespesas(granjaId, page);
+      setDespesas(dados.dados ?? [])
+      setPagination(dados.pagination)
+      
+    } catch (error) {
+        handleApiError(error)
+    }
   }
 
   const colunas = [
@@ -76,9 +82,9 @@ export default function Despesas() {
   async function carregarLoteFrangos() {
     try {
       const dados = await listarLoteFrangos(granjaId);
-      setLoteFrango(dados);
+      setLoteFrango(dados ?? []);
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -86,9 +92,9 @@ export default function Despesas() {
   async function carregarStatus() {
     try {
       const dados = await listarStatusFinancas(granjaId);
-      setStatus(dados);
+      setStatus(dados ?? []);
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -96,9 +102,9 @@ export default function Despesas() {
   async function carregarTiposDespesas() {
     try {
       const dados = await listarTiposDespesa(granjaId)
-      setTipoDespesa(dados)
+      setTipoDespesa(dados ?? [])
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -171,9 +177,9 @@ export default function Despesas() {
   async function carregarCards() {
     try {
       const dados = await cardsGastosGranja(granjaId);
-      setCardsDespesas(dados);
+      setCardsDespesas(dados ?? []);
     } catch (error) {
-      console.error(error);
+      handleApiError(error)
     } finally {
       setLoading(false);
     }
@@ -232,8 +238,9 @@ export default function Despesas() {
 
       await carregarDespesas()
       await carregarCards()
+      
     } catch (error) {
-      console.error("Erro ao salvar despesa:", error)
+      handleApiError(error)
     }
   }
 
@@ -255,7 +262,7 @@ export default function Despesas() {
         Despesas
       </h1>
       
-      <FinanceiroCards cards={[
+      <GenericCards cards={[
         {
           titulo: "Total Gasto no mês",
           valor: formatarMoeda(cardsDespesas?.total_gasto_mes_granja ?? 0),

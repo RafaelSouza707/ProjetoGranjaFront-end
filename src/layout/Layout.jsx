@@ -1,5 +1,5 @@
 import { useNavigate, Outlet } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import Sidebar from "./Sidebar"
 import Topbar from "./Topbar"
@@ -12,7 +12,19 @@ export default function Layout() {
   const { user, logout } = useAuth()
 
   const [visible, setVisible] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 992)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 992)
+    }
+
+    handleResize()
+
+    window.addEventListener("resize", handleResize)
+
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   function handleLogout() {
     logout()

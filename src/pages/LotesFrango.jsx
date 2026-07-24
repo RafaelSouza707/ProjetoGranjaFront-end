@@ -177,7 +177,7 @@ export default function LotesFrango() {
         <p className="text-sm text-muted-foreground">Gerenciamento de alojamentos, populações e monitoramento.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div className="space-y-0.5">
             <span className="text-xs font-medium text-slate-500">Total de Aves Ativas</span>
@@ -188,18 +188,6 @@ export default function LotesFrango() {
           </div>
         </div>
 
-        <div 
-          onClick={() => navigate(`/granja/${granjaId}/mortalidade-granja`)}
-          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-red-300 hover:bg-red-50/20 transition-all group"
-        >
-          <div className="space-y-0.5">
-            <span className="text-xs font-medium text-slate-500 group-hover:text-red-600 transition-colors">Mortalidade no Mês</span>
-            <p className="text-xl font-bold text-red-600">{cardsLoteFrangos?.mortalidade_granja_mes ?? 0}</p>
-          </div>
-          <div className="p-2.5 bg-red-50 rounded-full text-red-600 group-hover:bg-red-100 transition-colors">
-            <Skull className="size-5" />
-          </div>
-        </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div className="space-y-0.5">
@@ -210,6 +198,30 @@ export default function LotesFrango() {
             <AlertTriangle className="size-5" />
           </div>
         </div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className="text-xs font-medium text-slate-500">Mortalidade do Mês</span>
+            <p className="text-xl font-bold text-red-600">{cardsLoteFrangos?.mortalidade_granja_mes ?? 0}</p>
+          </div>
+          <div className="p-2.5 bg-red-50 rounded-full text-red-600 group-hover:bg-red-100 transition-colors">
+            <Skull className="size-5" />
+          </div>
+        </div>
+
+        <div 
+          onClick={() => navigate(`/granja/${granjaId}/mortalidade-granja`)}
+          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-red-300 hover:bg-red-50/20 transition-all group"
+        >
+          <div className="space-y-0.5"> {/* Ajustar */}
+            <span className="text-xs font-medium text-slate-500 group-hover:text-red-600 transition-colors">Histórico de Mortalidade</span>
+            <p className="text-xl font-bold text-red-600">{cardsLoteFrangos?.historico_mortalidade_granja ?? 0}</p>
+          </div>
+          <div className="p-2.5 bg-red-50 rounded-full text-red-600 group-hover:bg-red-100 transition-colors">
+            <Skull className="size-5" />
+          </div>
+        </div>
+
       </div>
 
       {lotesFrango.length > 0 && (

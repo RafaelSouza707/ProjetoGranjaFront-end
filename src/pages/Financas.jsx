@@ -58,7 +58,7 @@ export default function Financas() {
         <p className="text-muted-foreground">Visão geral do desempenho financeiro, receitas e despesas do mês atual.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
@@ -92,6 +92,19 @@ export default function Financas() {
           </div>
           <div className="p-3 bg-red-50 rounded-full text-red-600">
             <Wallet className="size-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-500">Lucro Registrado</span>
+            <p className={`text-2xl font-bold ${lucroMes >= 0 ? "text-green-600" : "text-red-600"}`}>
+              {formatarMoeda(lucroMes)}
+            </p>
+            <span className="text-xs text-slate-400">Histórico financeiro</span>
+          </div>
+          <div className="p-3 bg-green-50 rounded-full text-green-600">
+            <TrendingUp className="size-6" />
           </div>
         </div>
 

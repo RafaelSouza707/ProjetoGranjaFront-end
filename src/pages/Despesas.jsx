@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import Tabela from "@/components/Genericos/Tabela"
 import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
+import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
 import { useParams } from "react-router-dom"
 
 import { cardsGastosGranja, listarDespesas, criarDespesa, deletarDespesa, atualizarDespesa, despesaElastica } from "@/api/financas/despesaService"
@@ -169,6 +170,8 @@ export default function Despesas() {
   const [despesas, setDespesas] = useState([])
 
   const [open, setOpen] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
+  const [itemParaDeletar, setItemParaDeletar] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const [despesaSelecionada, setDespesaSelecionada] = useState(null)
@@ -185,10 +188,24 @@ export default function Despesas() {
     }
   }
 
-  async function apagarDespesa(id) {
-    await deletarDespesa(id, granjaId);
-    await carregarDespesas()
-    await carregarCards()
+  function solicitarExclusao(item) {
+    setItemParaDeletar(item)
+    setOpenDelete(true)
+  }
+
+  async function apagarDespesa() {
+    if (!itemParaDeletar) return
+    try {
+      await deletarDespesa(itemParaDeletar.id, granjaId);
+      
+      setOpenDelete(false)
+      setItemParaDeletar(null)
+
+      await carregarDespesas()
+      await carregarCards()
+    } catch (error) {
+      handleApiError(error)
+    }
   }
 
   async function novaDespesa() {
@@ -281,7 +298,7 @@ export default function Despesas() {
         textoBotao="+ Nova Despesa"
         onNovo={novaDespesa}
         onEditar={editarDespesa}
-        onExcluir={(item) => apagarDespesa(item.id)}
+        onExcluir={solicitarExclusao}
         onSearch={buscaElasticaDespesa}
         pagination={pagination}
         onPageChange={setPage}
@@ -298,6 +315,15 @@ export default function Despesas() {
         campos={campos}
         dadosIniciais={despesaSelecionada}
         onSalvar={salvarDespesa}
+      />
+
+      <ConfirmDialog
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        onConfirm={apagarDespesa}
+        titulo="Excluir Despesa"
+        descricao={`Deseja realmente excluir esta despesa no valor de ${formatarMoeda(itemParaDeletar?.valor ?? 0)}?`}
+        textoConfirmar="Excluir"
       />
     </div>
   )

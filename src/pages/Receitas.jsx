@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom"
 import Tabela from "@/components/Genericos/Tabela"
 import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
+import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
 
 import { formatarMoeda } from "@/utils/formatters"
 
@@ -36,6 +37,8 @@ export default function Receitas() {
   const [pagination, setPagination] = useState(null)
 
   const [open, setOpen] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
+  const [itemParaDeletar, setItemParaDeletar] = useState(null)
 
   const [receitas, setReceitas] = useState([])
   const [receitaSelecionada, setReceitaSelecionada] = useState(null)
@@ -112,9 +115,18 @@ export default function Receitas() {
     setOpen(true)
   }
 
-  async function apagarReceita(id) {
+  function solicitarExclusao(item) {
+    setItemParaDeletar(item)
+    setOpenDelete(true)
+  }
+
+  async function apagarReceita() {
+    if (!itemParaDeletar) return
     try {
-      await deletarReceita(id, granjaId)
+      await deletarReceita(itemParaDeletar.id, granjaId)
+
+      setOpenDelete(false)
+      setItemParaDeletar(null)
 
       await carregarReceitas()
       await carregarCards()
@@ -194,7 +206,7 @@ export default function Receitas() {
     }
   ]
 
-const colunas = [
+  const colunas = [
     {
       key: "id",
       label: "#",
@@ -212,7 +224,7 @@ const colunas = [
     {
       key: "venda.tipo.nome",
       label: "TIPO DE VENDA",
-      render: (item) => item.venda?.tipo?.nome ?? "Receita Direta" // Se venda for null, exibe um texto amigável
+      render: (item) => item.venda?.tipo?.nome ?? "Receita Direta"
     },
     {
       key: "data",
@@ -275,7 +287,7 @@ const colunas = [
         textoBotao="+ Nova Receita"
         onNovo={novaReceita}
         onEditar={editarReceita}
-        onExcluir={(item) => apagarReceita(item.id)}
+        onExcluir={solicitarExclusao}
         pagination={pagination}
         onPageChange={setPage}
       />
@@ -291,6 +303,15 @@ const colunas = [
         campos={campos}
         dadosIniciais={receitaSelecionada}
         onSalvar={salvarReceita}
+      />
+
+      <ConfirmDialog
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        onConfirm={apagarReceita}
+        titulo="Excluir Receita"
+        descricao={`Deseja realmente excluir esta receita no valor de ${formatarMoeda(itemParaDeletar?.valor ?? 0)}?`}
+        textoConfirmar="Excluir"
       />
     </div>
   )

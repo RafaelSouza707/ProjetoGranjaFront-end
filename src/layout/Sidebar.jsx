@@ -50,7 +50,6 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
       </CSidebarHeader>
 
       <CSidebarNav>
-        {/* 1. ITENS GERAIS SEMPRE VISÍVEIS NO TOPO */}
         <CNavTitle>Geral</CNavTitle>
         <CNavItem>
           <NavLink to="/" className={navLinkClass} end>
@@ -65,7 +64,6 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
           </NavLink>
         </CNavItem>
 
-        {/* 2. MÓDULOS ESPECÍFICOS DA GRANJA ATIVA */}
         {activeGranjaId && (
           <>
             <CNavTitle className="mt-2">Módulos da Granja</CNavTitle>

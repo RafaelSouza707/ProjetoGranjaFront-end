@@ -5,8 +5,10 @@ import Tabela from "@/components/Genericos/Tabela"
 import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
+import { Button } from "@/components/ui/button"
 
 import { formatarMoeda } from "@/utils/formatters"
+import { handleApiError } from "@/utils/handleApiError"
 
 import {
   listarReceitas,
@@ -21,16 +23,6 @@ import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
 import { listarVendas } from "@/api/venda_Estoque/vendaService"
 
 export default function Receitas() {
-
-  async function carregarDados() {
-    await Promise.all([
-      carregarCards(),
-      carregarTiposReceita(),
-      carregarVendas(),
-      carregarStatusFinancas(),
-    ])
-  }
-
   const { granjaId } = useParams()
   
   const [page, setPage] = useState(1)
@@ -48,6 +40,13 @@ export default function Receitas() {
 
   const [cardsReceitas, setCardsReceitas] = useState(null)
 
+  const [filtroDataInicio, setFiltroDataInicio] = useState("")
+  const [filtroDataFim, setFiltroDataFim] = useState("")
+  const [filtroTipoReceitaId, setFiltroTipoReceitaId] = useState("")
+  const [filtroStatusFinancasId, setFiltroStatusFinancasId] = useState("")
+  const [termoBusca, setTermoBusca] = useState("")
+  const [filtrosAtivos, setFiltrosAtivos] = useState({})
+
   function toNumberOrNull(value) {
     if (value === "" || value === null || value === undefined) {
       return null
@@ -55,6 +54,15 @@ export default function Receitas() {
 
     const n = Number(value)
     return isNaN(n) ? null : n
+  }
+
+  async function carregarDados() {
+    await Promise.all([
+      carregarCards(),
+      carregarTiposReceita(),
+      carregarVendas(),
+      carregarStatusFinancas(),
+    ])
   }
 
   async function carregarVendas() {
@@ -69,7 +77,7 @@ export default function Receitas() {
   async function carregarTiposReceita() {
     try {
       const dados = await listarTiposReceitas(granjaId)
-      setTipoReceita(dados)
+      setTipoReceita(dados ?? [])
     } catch (error) {
       handleApiError(error)
     }
@@ -78,7 +86,7 @@ export default function Receitas() {
   async function carregarStatusFinancas() {
     try {
       const dados = await listarStatusFinancas(granjaId)
-      setStatusFinancas(dados)
+      setStatusFinancas(dados ?? [])
     } catch (error) {
       handleApiError(error)
     }
@@ -86,19 +94,36 @@ export default function Receitas() {
 
   async function carregarReceitas() {
     try {
-      const dados = await listarReceitas(granjaId, page)
+      const params = { pagina: page, ...filtrosAtivos }
+      if (termoBusca) params.search = termoBusca
 
-      setReceitas(dados.dados)
+      const dados = await listarReceitas(granjaId, params)
+      setReceitas(dados.dados ?? [])
       setPagination(dados.pagination)
     } catch (error) {
       handleApiError(error)
     }
   }
 
+  function aplicarFiltros(e) {
+    e?.preventDefault()
+    setPage(1)
+    setFiltrosAtivos({
+      ...(filtroDataInicio && { "data__gte": filtroDataInicio }),
+      ...(filtroDataFim && { "data__lte": filtroDataFim }),
+      ...(filtroTipoReceitaId && { "tipo_receita_id": Number(filtroTipoReceitaId) }),
+      ...(filtroStatusFinancasId && { "status_financas_id": Number(filtroStatusFinancasId) }),
+    })
+  }
+
+  function handleSearch(termo) {
+    setTermoBusca(termo)
+    setPage(1)
+  }
+
   async function carregarCards() {
     try {
       const dados = await cardReceitaGranja(granjaId)
-      console.log(dados)
       setCardsReceitas(dados)
     } catch (error) {
       handleApiError(error)
@@ -245,11 +270,12 @@ export default function Receitas() {
 
   useEffect(() => {
     carregarDados()
-  }, [])
+  }, [granjaId])
 
   useEffect(() => {
+    if (!granjaId) return
     carregarReceitas()
-  }, [page])
+  }, [granjaId, page, filtrosAtivos])
   
   return (
     <div className="p-6">
@@ -262,7 +288,7 @@ export default function Receitas() {
           {
             titulo: "Total arrecadado no mês",
             valor: formatarMoeda(
-              cardsReceitas?.card_receita_valor_total_venda_mes_graja ?? 0
+              cardsReceitas?.card_receita_valor_total_venda_mes_granja ?? cardsReceitas?.card_receita_valor_total_venda_mes_graja ?? 0
             ),
             cor: "text-green-600",
           },
@@ -288,9 +314,50 @@ export default function Receitas() {
         onNovo={novaReceita}
         onEditar={editarReceita}
         onExcluir={solicitarExclusao}
+        onSearch={handleSearch}
         pagination={pagination}
-        onPageChange={setPage}
-      />
+        onPageChange={(novaPagina) => setPage(novaPagina)}
+      >
+        <input
+          type="date"
+          value={filtroDataInicio}
+          onChange={(e) => setFiltroDataInicio(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <input
+          type="date"
+          value={filtroDataFim}
+          onChange={(e) => setFiltroDataFim(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <select
+          value={filtroTipoReceitaId}
+          onChange={(e) => setFiltroTipoReceitaId(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        >
+          <option value="">Todos os Tipos</option>
+          {tipoReceita.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.nome.toUpperCase()}
+            </option>
+          ))}
+        </select>
+        <select
+          value={filtroStatusFinancasId}
+          onChange={(e) => setFiltroStatusFinancasId(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        >
+          <option value="">Todos os Status</option>
+          {statusFinancas.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nome.toUpperCase()}
+            </option>
+          ))}
+        </select>
+        <Button type="button" variant="secondary" onClick={aplicarFiltros}>
+          Filtrar
+        </Button>
+      </Tabela>
 
       <ModalForm
         open={open}

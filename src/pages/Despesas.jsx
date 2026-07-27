@@ -4,9 +4,10 @@ import Tabela from "@/components/Genericos/Tabela"
 import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
-import { useParams } from "react-router-dom"
+import { useParams, useSearchParams } from "react-router-dom"
+import { Button } from "@/components/ui/button"
 
-import { cardsGastosGranja, listarDespesas, criarDespesa, deletarDespesa, atualizarDespesa, despesaElastica } from "@/api/financas/despesaService"
+import { cardsGastosGranja, listarDespesas, criarDespesa, deletarDespesa, atualizarDespesa } from "@/api/financas/despesaService"
 import { listarTiposDespesa } from "@/api/financas/tipoDespesaService"
 import { formatarMoeda } from "@/utils/formatters"
 import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
@@ -17,9 +18,25 @@ import { handleApiError } from "@/utils/handleApiError"
 export default function Despesas() {
 
   const { granjaId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState(null)
+  const [despesas, setDespesas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
+  const [itemParaDeletar, setItemParaDeletar] = useState(null)
+  const [despesaSelecionada, setDespesaSelecionada] = useState(null)
+  const [cardsDespesas, setCardsDespesas] = useState(null);
+
+  const [loteFrango, setLoteFrango] = useState([])
+  const [status, setStatus] = useState([])
+  const [tipoDespesa, setTipoDespesa] = useState([])
+
+  const [filtroTipo, setFiltroTipo] = useState(searchParams.get("tipo_despesa_id") || "todos")
+  const [filtroStatus, setFiltroStatus] = useState(searchParams.get("status_financas_id") || "todos")
+  const [filtroDataInicio, setFiltroDataInicio] = useState(searchParams.get("data__gte") || "")
+  const [filtroDataFim, setFiltroDataFim] = useState(searchParams.get("data__lte") || "")
 
   async function carregarDados() {
     await Promise.all([
@@ -32,151 +49,17 @@ export default function Despesas() {
 
   async function carregarDespesas() {
     try {
-      const dados = await listarDespesas(granjaId, page);
+      const paginaAtual = searchParams.get("pagina") || searchParams.get("page") || "1"
+      const paramsObj = Object.fromEntries(searchParams.entries())
+      
+      const dados = await listarDespesas(granjaId, { pagina: paginaAtual, ...paramsObj });
       setDespesas(dados.dados ?? [])
       setPagination(dados.pagination)
-      
-    } catch (error) {
-        handleApiError(error)
-    }
-  }
-
-  const colunas = [
-    {
-      key: "id",
-      label: "#",
-    },
-    {
-      key: "tipo.nome",
-      label: "tipo".toUpperCase(),
-    },
-    {
-      key: "status.nome",
-      label: "status".toUpperCase(),
-    },
-    {
-      key: "lote_frango.identificacao",
-      label: "lote de frango".toUpperCase(),
-      className: "uppercase"
-    },
-    {
-      key: "data",
-      label: "data".toUpperCase(),
-    },
-    {
-      key: "data_vencimento",
-      label: "vencimento".toUpperCase(),
-    },
-    {
-      key: "valor",
-      label: "valor".toUpperCase(),
-      render: (item) => formatarMoeda(item.valor)
-    },
-    {
-      key: "descricao",
-      label: "descrição".toUpperCase(),
-      render: renderTextoColuna("descricao", 10)
-    }
-  ]
-
-  const [ loteFrango, setLoteFrango ] = useState([])
-  async function carregarLoteFrangos() {
-    try {
-      const dados = await listarLoteFrangos(granjaId);
-      setLoteFrango(dados ?? []);
     } catch (error) {
       handleApiError(error)
     }
   }
 
-  const [status, setStatus] = useState([])
-  async function carregarStatus() {
-    try {
-      const dados = await listarStatusFinancas(granjaId);
-      setStatus(dados ?? []);
-    } catch (error) {
-      handleApiError(error)
-    }
-  }
-
-  const [tipoDespesa, setTipoDespesa] = useState([])
-  async function carregarTiposDespesas() {
-    try {
-      const dados = await listarTiposDespesa(granjaId)
-      setTipoDespesa(dados ?? [])
-    } catch (error) {
-      handleApiError(error)
-    }
-  }
-
-  const campos = [
-    {
-      name: "tipo_despesa_id",
-      label: "Tipo de Despesa",
-      type: "select",
-      options: tipoDespesa.map(t => ({
-        value: t.id,
-        label: t.nome.toUpperCase()
-      }))
-    },
-    {
-      name: "status_financas_id",
-      label: "Status",
-      type: "select",
-      options: status.map(s => ({
-        value: s.id,
-        label: s.nome.toUpperCase()
-      }))
-    },
-    { 
-      name: "lote_frango_id",
-      label: "Lote de Frango",  
-      type: "select",
-      options: loteFrango.map(l => ({
-        value: l.id,
-        label: l.identificacao.toUpperCase()
-      })),
-    },
-    {
-      name: "data",
-      label: "Data da Despesa",
-      type: "date"
-    },
-    {
-      name: "data_vencimento",
-      label: "Data Vencimento",
-      type: "date",
-      required: false
-    },
-    {
-      name: "valor",
-      label: "Valor da Despesa",
-      type: "number"
-    },
-    {
-      name: "descricao",
-      label:"Descrição",
-      type: "text",
-      maxLength: 256
-    }
-  ]
-
-  function toNumberOrNull(value) {
-    if (value === "" || value === null || value === undefined) return null
-    const n = Number(value)
-    return isNaN(n) ? null : n
-  }
-
-  const [despesas, setDespesas] = useState([])
-
-  const [open, setOpen] = useState(false)
-  const [openDelete, setOpenDelete] = useState(false)
-  const [itemParaDeletar, setItemParaDeletar] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  const [despesaSelecionada, setDespesaSelecionada] = useState(null)
-
-  const [cardsDespesas, setCardsDespesas] = useState(null);
   async function carregarCards() {
     try {
       const dados = await cardsGastosGranja(granjaId);
@@ -188,6 +71,75 @@ export default function Despesas() {
     }
   }
 
+  async function carregarLoteFrangos() {
+    try {
+      const dados = await listarLoteFrangos(granjaId);
+      setLoteFrango(dados ?? []);
+    } catch (error) {
+      handleApiError(error)
+    }
+  }
+
+  async function carregarStatus() {
+    try {
+      const dados = await listarStatusFinancas(granjaId);
+      setStatus(dados ?? []);
+    } catch (error) {
+      handleApiError(error)
+    }
+  }
+
+  async function carregarTiposDespesas() {
+    try {
+      const dados = await listarTiposDespesa(granjaId)
+      setTipoDespesa(dados ?? [])
+    } catch (error) {
+      handleApiError(error)
+    }
+  }
+
+  const colunas = [
+    { key: "id", label: "#" },
+    { key: "tipo.nome", label: "TIPO" },
+    { key: "status.nome", label: "STATUS" },
+    { key: "lote_frango.identificacao", label: "LOTE DE FRANGO", className: "uppercase" },
+    { key: "data", label: "DATA", render: (item) => item.data ? new Date(item.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "-" },
+    { key: "data_vencimento", label: "VENCIMENTO", render: (item) => item.data_vencimento ? new Date(item.data_vencimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : "-" },
+    { key: "valor", label: "VALOR", render: (item) => formatarMoeda(item.valor) },
+    { key: "descricao", label: "DESCRIÇÃO", render: renderTextoColuna("descricao", 10) }
+  ]
+
+  const campos = [
+    {
+      name: "tipo_despesa_id",
+      label: "Tipo de Despesa",
+      type: "select",
+      options: tipoDespesa.map(t => ({ value: t.id, label: t.nome.toUpperCase() }))
+    },
+    {
+      name: "status_financas_id",
+      label: "Status",
+      type: "select",
+      options: status.map(s => ({ value: s.id, label: s.nome.toUpperCase() }))
+    },
+    { 
+      name: "lote_frango_id",
+      label: "Lote de Frango",  
+      type: "select",
+      options: loteFrango.map(l => ({ value: l.id, label: l.identificacao.toUpperCase() })),
+    },
+    { name: "data", label: "Data da Despesa", type: "date" },
+    { name: "data_vencimento", label: "Data Vencimento", type: "date", required: false },
+    { name: "valor", label: "Valor da Despesa", type: "number" },
+    { name: "descricao", label: "Descrição", type: "text", maxLength: 256 }
+  ]
+
+  function toNumberOrNull(value) {
+    if (value === "" || value === null || value === undefined) return null
+    const n = Number(value)
+    return isNaN(n) ? null : n
+  }
+
   function solicitarExclusao(item) {
     setItemParaDeletar(item)
     setOpenDelete(true)
@@ -197,10 +149,8 @@ export default function Despesas() {
     if (!itemParaDeletar) return
     try {
       await deletarDespesa(itemParaDeletar.id, granjaId);
-      
       setOpenDelete(false)
       setItemParaDeletar(null)
-
       await carregarDespesas()
       await carregarCards()
     } catch (error) {
@@ -208,7 +158,7 @@ export default function Despesas() {
     }
   }
 
-  async function novaDespesa() {
+  function novaDespesa() {
     setDespesaSelecionada(null)
     setOpen(true)
   }
@@ -221,14 +171,53 @@ export default function Despesas() {
     setOpen(true)
   }
 
-  async function buscaElasticaDespesa(termo) {
-    if (!termo.trim()) {
-      await carregarDespesas()
-      return
+  function handleSearch(termo) {
+    const newParams = new URLSearchParams(searchParams)
+    if (!termo || !termo.trim()) {
+      newParams.delete("search")
+    } else {
+      newParams.set("search", termo.trim())
+    }
+    newParams.set("pagina", "1")
+    setSearchParams(newParams)
+  }
+
+  function aplicarFiltros(e) {
+    e.preventDefault()
+    const newParams = new URLSearchParams(searchParams)
+
+    if (filtroTipo !== "todos") {
+      newParams.set("tipo_despesa_id", filtroTipo)
+    } else {
+      newParams.delete("tipo_despesa_id")
     }
 
-    const resultado = await despesaElastica(termo)
-    setDespesas(resultado)
+    if (filtroStatus !== "todos") {
+      newParams.set("status_financas_id", filtroStatus)
+    } else {
+      newParams.delete("status_financas_id")
+    }
+
+    if (filtroDataInicio) {
+      newParams.set("data__gte", filtroDataInicio)
+    } else {
+      newParams.delete("data__gte")
+    }
+
+    if (filtroDataFim) {
+      newParams.set("data__lte", filtroDataFim)
+    } else {
+      newParams.delete("data__lte")
+    }
+
+    newParams.set("pagina", "1")
+    setSearchParams(newParams)
+  }
+
+  function handlePageChange(novaPagina) {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set("pagina", novaPagina)
+    setSearchParams(newParams)
   }
 
   async function salvarDespesa(payload) {
@@ -252,10 +241,8 @@ export default function Despesas() {
 
       setOpen(false)
       setDespesaSelecionada(null)
-
       await carregarDespesas()
       await carregarCards()
-      
     } catch (error) {
       handleApiError(error)
     }
@@ -267,17 +254,15 @@ export default function Despesas() {
 
   useEffect(() => {
     carregarDespesas()
-  }, [page]);
+  }, [searchParams]);
 
   if (loading) {
     return <p>Carregando...</p>
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-4xl font-bold mb-6">
-        Despesas
-      </h1>
+    <div className="p-6 space-y-6">
+      <h1 className="text-4xl font-bold">Despesas</h1>
       
       <GenericCards cards={[
         {
@@ -291,6 +276,7 @@ export default function Despesas() {
           descricao: cardsDespesas?.maior_gasto?.tipo_despesa ?? "",
         },
       ]}/>
+
       <Tabela
         dados={despesas}
         colunas={colunas}
@@ -299,19 +285,53 @@ export default function Despesas() {
         onNovo={novaDespesa}
         onEditar={editarDespesa}
         onExcluir={solicitarExclusao}
-        onSearch={buscaElasticaDespesa}
+        onSearch={handleSearch}
         pagination={pagination}
-        onPageChange={setPage}
-      />
+        onPageChange={handlePageChange}
+      >
+        <input
+          type="date"
+          value={filtroDataInicio}
+          onChange={(e) => setFiltroDataInicio(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <input
+          type="date"
+          value={filtroDataFim}
+          onChange={(e) => setFiltroDataFim(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <select
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value)}
+        >
+          <option value="todos">Todos os Tipos</option>
+          {tipoDespesa.map(t => (
+            <option key={t.id} value={t.id}>{t.nome.toUpperCase()}</option>
+          ))}
+        </select>
 
-      <ModalForm
+        <select
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+          value={filtroStatus}
+          onChange={(e) => setFiltroStatus(e.target.value)}
+        >
+          <option value="todos">Todos os Status</option>
+          {status.map(s => (
+            <option key={s.id} value={s.id}>{s.nome.toUpperCase()}</option>
+          ))}
+        </select>
+
+        <Button type="button" variant="secondary" onClick={aplicarFiltros}>
+          Filtrar
+        </Button>
+      </Tabela>
+
+      <ModalForm  
         open={open}
         onOpenChange={setOpen}
-        titulo={
-          despesaSelecionada
-          ? "Editar Despesa"
-          : "Nova Despesa"
-        }
+        titulo={despesaSelecionada ? "Editar Despesa" : "Nova Despesa"}
         campos={campos}
         dadosIniciais={despesaSelecionada}
         onSalvar={salvarDespesa}

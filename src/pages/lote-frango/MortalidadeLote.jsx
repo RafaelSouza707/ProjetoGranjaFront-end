@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom"
 import Tabela from "@/components/Genericos/Tabela"
 import ModalForm from "@/components/Genericos/ModalForm"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
+import { Button } from "@/components/ui/button"
+
 import {
   listarMortalidade,
   criarMortalidade,
@@ -12,6 +14,7 @@ import {
 } from "@/api/aviario/mortalidadeService"
 
 import { formatarData } from "@/components/utils/DataFormater"
+import { handleApiError } from "@/utils/handleApiError"
 
 export function MortalidadeLote() {
   const { granjaId, loteFrangoId } = useParams()
@@ -25,23 +28,42 @@ export function MortalidadeLote() {
   const [openDelete, setOpenDelete] = useState(false)
   const [mortalidadeDelete, setMortalidadeDelete] = useState(null)
 
+  // Estados de Filtro
+  const [filtroDataInicio, setFiltroDataInicio] = useState("")
+  const [filtroDataFim, setFiltroDataFim] = useState("")
+  const [termoBusca, setTermoBusca] = useState("")
+  const [filtrosAtivos, setFiltrosAtivos] = useState({})
+
   useEffect(() => {
     if (!granjaId) return
     carregarMortalidade()
-  }, [granjaId, loteFrangoId])
-
-  useEffect(() => {
-    carregarMortalidade()
-  }, [page])
+  }, [granjaId, loteFrangoId, page, filtrosAtivos])
 
   async function carregarMortalidade() {
     try {
-      const dados = await listarMortalidade(loteFrangoId, granjaId, page)
+      const params = { pagina: page, ...filtrosAtivos }
+      if (termoBusca) params.search = termoBusca
+
+      const dados = await listarMortalidade(loteFrangoId, granjaId, params)
       setMortalidades(dados.dados ?? [])
       setPagination(dados.pagination)
     } catch (error) {
         handleApiError(error)
     }
+  }
+
+  function aplicarFiltros(e) {
+    e?.preventDefault()
+    setPage(1)
+    setFiltrosAtivos({
+      data_inicio: filtroDataInicio || undefined,
+      data_fim: filtroDataFim || undefined,
+    })
+  }
+
+  function handleSearch(termo) {
+    setTermoBusca(termo)
+    setPage(1)
   }
 
   function novaMortalidade() {
@@ -124,9 +146,26 @@ export function MortalidadeLote() {
         onNovo={novaMortalidade}
         onEditar={editarMortalidade}
         onExcluir={excluirMortalidade}
+        onSearch={handleSearch}
         pagination={pagination}
-        onPageChange={setPage}
-      />
+        onPageChange={(novaPagina) => setPage(novaPagina)}
+      >
+        <input
+          type="date"
+          value={filtroDataInicio}
+          onChange={(e) => setFiltroDataInicio(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <input
+          type="date"
+          value={filtroDataFim}
+          onChange={(e) => setFiltroDataFim(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <Button type="button" variant="secondary" onClick={aplicarFiltros}>
+          Filtrar
+        </Button>
+      </Tabela>
 
       <ModalForm
         open={open}

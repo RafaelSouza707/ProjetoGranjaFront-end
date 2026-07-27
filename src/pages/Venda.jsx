@@ -57,6 +57,11 @@ export default function Venda() {
   const [openClienteDelete, setOpenClienteDelete] = useState(false)
   const [clienteDelete, setClienteDelete] = useState(null)
 
+  const [filtroDataInicio, setFiltroDataInicio] = useState("")
+  const [filtroDataFim, setFiltroDataFim] = useState("")
+  const [termoBusca, setTermoBusca] = useState("")
+  const [filtrosAtivos, setFiltrosAtivos] = useState({})
+
   useEffect(() => {
     if (!granjaId) return
     carregarClientes()
@@ -66,12 +71,16 @@ export default function Venda() {
   }, [granjaId])
 
   useEffect(() => {
+    if (!granjaId) return
     carregarVendas()
-  }, [page])
+  }, [granjaId, page, filtrosAtivos])
 
   async function carregarVendas() {
     try {
-      const resposta = await listarVendas(granjaId, page)
+      const params = { pagina: page, ...filtrosAtivos }
+      if (termoBusca) params.search = termoBusca
+
+      const resposta = await listarVendas(granjaId, params)
 
       const payload = resposta?.data ?? resposta
 
@@ -84,6 +93,21 @@ export default function Venda() {
       console.error(error)
       setVendas([])
     }
+  }
+
+  function aplicarFiltros(e) {
+    e?.preventDefault()
+    setPage(1)
+    
+    setFiltrosAtivos({
+      ...(filtroDataInicio && { "data_venda__gte": filtroDataInicio }),
+      ...(filtroDataFim && { "data_venda__lte": filtroDataFim }),
+    })
+  }
+
+  function handleSearch(termo) {
+    setTermoBusca(termo)
+    setPage(1)
   }
 
   async function carregarProdutosGranja() {
@@ -346,9 +370,26 @@ export default function Venda() {
             onNovo={novaVenda}
             onEditar={editarVenda}
             onExcluir={excluirVenda}
+            onSearch={handleSearch}
             pagination={pagination}
             onPageChange={setPage}
-          />
+          >
+            <input
+              type="date"
+              value={filtroDataInicio}
+              onChange={(e) => setFiltroDataInicio(e.target.value)}
+              className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            />
+            <input
+              type="date"
+              value={filtroDataFim}
+              onChange={(e) => setFiltroDataFim(e.target.value)}
+              className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            />
+            <Button type="button" variant="secondary" onClick={aplicarFiltros}>
+              Filtrar
+            </Button>
+          </Tabela>
         </TabsContent>
 
         <TabsContent value="clientes" className="mt-4 space-y-4">
@@ -364,7 +405,6 @@ export default function Venda() {
         </TabsContent>
       </Tabs>
 
-      {/* MODAL DE VENDA CUSTOMIZADO PURO */}
       {openVendaModal && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200"
@@ -375,7 +415,6 @@ export default function Venda() {
             style={{ maxWidth: '950px' }}
             onClick={(e) => e.stopPropagation()} 
           >
-            {/* Cabeçalho */}
             <div className="flex items-center justify-between p-6 pb-3 border-b border-slate-100">
               <h2 className="text-xl font-semibold tracking-tight text-slate-900">
                 {vendaSelecionada ? "Editar Venda" : "Inserir Venda"}
@@ -392,9 +431,7 @@ export default function Venda() {
             </div>
             
             <form onSubmit={salvarVenda} className="flex-1 overflow-y-auto p-6 py-4 space-y-5">
-              {/* Cabeçalho da Venda */}
               <div className="grid grid-cols-2 gap-4">
-                {/* CLIENTE */}
                 <div className="space-y-2">
                   <Label>Cliente</Label>
                   <Select 
@@ -420,7 +457,6 @@ export default function Venda() {
                   <Input type="date" required value={formVenda.data_venda} onChange={(e) => setFormVenda({...formVenda, data_venda: e.target.value})} />
                 </div>
 
-                {/* TIPO VENDA */}
                 <div className="space-y-2">
                   <Label>Tipo Venda</Label>
                   <Select 
@@ -438,7 +474,6 @@ export default function Venda() {
                   </Select>
                 </div>
 
-                {/* STATUS FINANCEIRO */}
                 <div className="space-y-2">
                   <Label>Status Financeiro</Label>
                   <Select 
@@ -459,7 +494,6 @@ export default function Venda() {
 
               <hr className="border-slate-100" />
 
-              {/* SEÇÃO DINÂMICA DE ITENS (PRODUTOS) */}  
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-slate-700">Produtos da Venda</h3>
@@ -472,7 +506,6 @@ export default function Venda() {
                   {itensVenda.map((item, index) => (
                     <div key={index} className="flex items-end gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
                       
-                      {/* PRODUTO */}
                       <div className="flex-1 space-y-1.5">
                         <Label className="text-xs">Produto</Label>
                         <Select
@@ -499,7 +532,6 @@ export default function Venda() {
                         </Select>
                       </div>
 
-                      {/* QUANTIDADE */}
                       <div className="w-[95px] space-y-1.5">
                         <Label className="text-xs">Quantidade</Label>
                         <Input
@@ -513,7 +545,6 @@ export default function Venda() {
                         />
                       </div>
 
-                      {/* PREÇO UNITÁRIO */}
                       <div className="w-[110px] space-y-1.5">
                         <Label className="text-xs">Preço Unit. (R$)</Label>
                         <Input
@@ -528,7 +559,6 @@ export default function Venda() {
                         />
                       </div>
 
-                      {/* VALOR TOTAL DO ITEM (SUBTOTAL) */}
                       <div className="w-[110px] space-y-1.5">
                         <Label className="text-xs">Subtotal (R$)</Label>
                         <Input
@@ -554,7 +584,6 @@ export default function Venda() {
                   ))}
                 </div>
 
-                {/* VALOR TOTAL GERAL DA VENDA EM TEMPO REAL */}
                 <div className="flex justify-end items-center gap-2 pt-2 pr-1">
                   <span className="text-sm font-medium text-slate-600">Valor Total da Venda:</span>
                   <span className="text-lg font-bold text-slate-900">

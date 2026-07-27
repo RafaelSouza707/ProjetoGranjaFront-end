@@ -51,6 +51,8 @@ export default function Tabela({
   onVendas,
   pagination,
   onPageChange,
+  onSearch,
+  children
 }) {
   const [busca, setBusca] = useState("")
 
@@ -68,8 +70,16 @@ export default function Tabela({
     })
   }
 
+  function handleSearchChange(e) {
+    const valor = e.target.value
+    setBusca(valor)
+    if (onSearch) {
+      onSearch(valor)
+    }
+  }
+
   const dadosFiltrados = (dados || []).filter((item) => {
-    if (!busca) return true;
+    if (!busca || onSearch) return true;
     
     return Object.values(item).some((valor) => {
       if (valor === null || valor === undefined) return false;
@@ -144,13 +154,17 @@ export default function Tabela({
     <Card>
       <CardContent className="p-6 space-y-4">
 
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-4 flex-wrap">
           <Input
             value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            onChange={handleSearchChange}
             placeholder={placeholderBusca}
             className="w-72"
           />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {children}
+          </div>
 
           {onNovo && (
             <Button onClick={onNovo}>

@@ -12,6 +12,7 @@ import {
 import { Skull } from "lucide-react"
 
 import Tabela from "@/components/Genericos/Tabela"
+import { Button } from "@/components/ui/button"
 import {
   listarMortalidade,
   listarGraficoMortalidadeGranja,
@@ -29,11 +30,20 @@ export default function MortalidadeGranja() {
   const [mortalidades, setMortalidades] = useState([])
   const [dadosGrafico, setDadosGrafico] = useState([])
 
+  // Estados de Filtro
+  const [filtroDataInicio, setFiltroDataInicio] = useState("")
+  const [filtroDataFim, setFiltroDataFim] = useState("")
+  const [termoBusca, setTermoBusca] = useState("")
+  const [filtrosAtivos, setFiltrosAtivos] = useState({})
+
   async function carregarDados() {
     try {
       setLoading(true)
+      const params = { pagina: page, ...filtrosAtivos }
+      if (termoBusca) params.search = termoBusca
+
       const [resMortalidade, resGrafico] = await Promise.all([
-        listarMortalidade(null, granjaId, page),
+        listarMortalidade(null, granjaId, params),
         listarGraficoMortalidadeGranja(granjaId)
       ])
       
@@ -47,10 +57,24 @@ export default function MortalidadeGranja() {
     }
   }
 
+  function aplicarFiltros(e) {
+    e?.preventDefault()
+    setPage(1)
+    setFiltrosAtivos({
+      data_inicio: filtroDataInicio || undefined,
+      data_fim: filtroDataFim || undefined,
+    })
+  }
+
+  function handleSearch(termo) {
+    setTermoBusca(termo)
+    setPage(1)
+  }
+
   useEffect(() => {
     if (!granjaId) return
     carregarDados()
-  }, [granjaId, page])
+  }, [granjaId, page, filtrosAtivos])
 
   const totalMortalidadeGeral = dadosGrafico.reduce((acc, curr) => acc + (Number(curr.quantidade) || 0), 0)
 
@@ -114,9 +138,26 @@ export default function MortalidadeGranja() {
         dados={mortalidades}
         colunas={colunas}
         placeholderBusca="Buscar mortalidade..."
+        onSearch={handleSearch}
         pagination={pagination}
         onPageChange={setPage}
-      />
+      >
+        <input
+          type="date"
+          value={filtroDataInicio}
+          onChange={(e) => setFiltroDataInicio(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <input
+          type="date"
+          value={filtroDataFim}
+          onChange={(e) => setFiltroDataFim(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <Button type="button" variant="secondary" onClick={aplicarFiltros}>
+          Filtrar
+        </Button>
+      </Tabela>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom"
 import Tabela from "@/components/Genericos/Tabela"
 import ModalForm from "@/components/Genericos/ModalForm"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
+import { Button } from "@/components/ui/button"
 
 import {
   listarProdutos,
@@ -15,11 +16,11 @@ import {
 import { listarTipoProduto } from "@/api/aviario/tipoProdutoService"
 import { listarTipoUnidadeMedida } from "@/api/venda_Estoque/tipoUnidadeMedidaService"
 
-
 import { parseQuantidade, formatarQuantidade } from "@/components/utils/converterQuantidade"
+import { handleApiError } from "@/utils/handleApiError"
 
 export default function Produto() {
-const { granjaId } = useParams()
+  const { granjaId } = useParams()
 
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState(null)
@@ -34,25 +35,47 @@ const { granjaId } = useParams()
   const [openDelete, setOpenDelete] = useState(false)
   const [produtoDelete, setProdutoDelete] = useState(null)
 
+  const [filtroDataInicio, setFiltroDataInicio] = useState("")
+  const [filtroDataFim, setFiltroDataFim] = useState("")
+  const [termoBusca, setTermoBusca] = useState("")
+  const [filtrosAtivos, setFiltrosAtivos] = useState({})
+
   useEffect(() => {
     if (!granjaId) return
     carregarTipoProduto()
     carregarUnidadeMedida()
-
-  }, [])
+  }, [granjaId])
 
   useEffect(() => {
+    if (!granjaId) return
     carregarProdutos()
-  }, [page])
+  }, [granjaId, page, filtrosAtivos])
 
   async function carregarProdutos() {
     try {
-      const dados = await listarProdutos(granjaId, page)
+      const params = { pagina: page, ...filtrosAtivos }
+      if (termoBusca) params.search = termoBusca
+
+      const dados = await listarProdutos(granjaId, params)
       setProdutos(dados.dados ?? [])
       setPagination(dados.pagination)
     } catch (error) {
       handleApiError(error)
     }
+  }
+
+  function aplicarFiltros(e) {
+    e?.preventDefault()
+    setPage(1)
+    setFiltrosAtivos({
+      data_inicio: filtroDataInicio || undefined,
+      data_fim: filtroDataFim || undefined,
+    })
+  }
+
+  function handleSearch(termo) {
+    setTermoBusca(termo)
+    setPage(1)
   }
 
   async function carregarTipoProduto() {
@@ -66,11 +89,11 @@ const { granjaId } = useParams()
 
   async function carregarUnidadeMedida() {
     try {
-    const dados = await listarTipoUnidadeMedida(granjaId)
-    setTipoUnidadeMedida(dados ?? [])
-  } catch (error) {
-    handleApiError(error)
-  }
+      const dados = await listarTipoUnidadeMedida(granjaId)
+      setTipoUnidadeMedida(dados ?? [])
+    } catch (error) {
+      handleApiError(error)
+    }
   }
 
   function novoProduto() {
@@ -79,7 +102,7 @@ const { granjaId } = useParams()
   }
 
   function editarProduto(item) {
-      setProdutoSelecionado({
+    setProdutoSelecionado({
       ...item,
       tipo_produto_id: item.tipo_produto_id,
       tipo_unidade_medida_id: item.tipo_unidade_medida_id,
@@ -97,22 +120,22 @@ const { granjaId } = useParams()
   async function salvarProduto(payload) {
     try {
       const body = {
-      ...payload,
-      granja_id: Number(granjaId),
-      tipo_produto_id: Number(payload.tipo_produto_id),
-      tipo_unidade_medida_id: Number(payload.tipo_unidade_medida_id),
-      quantidade_estoque: parseQuantidade(payload.quantidade_estoque),
-    }
+        ...payload,
+        granja_id: Number(granjaId),
+        tipo_produto_id: Number(payload.tipo_produto_id),
+        tipo_unidade_medida_id: Number(payload.tipo_unidade_medida_id),
+        quantidade_estoque: parseQuantidade(payload.quantidade_estoque),
+      }
 
-    if (produtoSelecionado) {
-      await atualizarProduto(
-        produtoSelecionado.id,
-        granjaId,
-        body
-      )
-    } else {
-      await criarProduto(granjaId, body)
-    }
+      if (produtoSelecionado) {
+        await atualizarProduto(
+          produtoSelecionado.id,
+          granjaId,
+          body
+        )
+      } else {
+        await criarProduto(granjaId, body)
+      }
 
       setOpen(false)
       setProdutoSelecionado(null)
@@ -125,19 +148,19 @@ const { granjaId } = useParams()
 
   async function confirmarExclusao() {
     if (!produtoDelete) return
-      try {
-        await deletarProduto(
-          produtoDelete.id,
-          granjaId
-        )
+    try {
+      await deletarProduto(
+        produtoDelete.id,
+        granjaId
+      )
 
-        setOpenDelete(false)
-        setProdutoDelete(null)
+      setOpenDelete(false)
+      setProdutoDelete(null)
 
-        await carregarProdutos()
-      } catch (error) {
-        handleApiError(error)
-      }
+      await carregarProdutos()
+    } catch (error) {
+      handleApiError(error)
+    }
   }
 
   const colunas = [
@@ -175,8 +198,8 @@ const { granjaId } = useParams()
       label: "Tipo Produto",
       type: "select",
       options: tipoProduto.map((tipo) => ({
-      value: tipo.id,
-      label: tipo.nome,
+        value: tipo.id,
+        label: tipo.nome,
       })),
       required: true
     },
@@ -185,8 +208,8 @@ const { granjaId } = useParams()
       label: "Unidade de Medida",
       type: "select",
       options: tipoUnidadeMedida.map((unidade) => ({
-      value: unidade.id,
-      label: unidade.sigla,
+        value: unidade.id,
+        label: unidade.sigla,
       })),
       required: true
     },
@@ -223,15 +246,31 @@ const { granjaId } = useParams()
         onNovo={novoProduto}
         onEditar={editarProduto}
         onExcluir={excluirProduto}
+        onSearch={handleSearch}
         pagination={pagination}
         onPageChange={setPage}
+      >
+        <input
+          type="date"
+          value={filtroDataInicio}
+          onChange={(e) => setFiltroDataInicio(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
         />
+        <input
+          type="date"
+          value={filtroDataFim}
+          onChange={(e) => setFiltroDataFim(e.target.value)}
+          className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+        />
+        <Button type="button" variant="secondary" onClick={aplicarFiltros}>
+          Filtrar
+        </Button>
+      </Tabela>
 
       <ModalForm
         open={open}
         onOpenChange={(value) => {
           setOpen(value)
-          
           if (!value) {
             setProdutoSelecionado(null)
           }
@@ -244,7 +283,7 @@ const { granjaId } = useParams()
         campos={campos}
         dadosIniciais={produtoSelecionado}
         onSalvar={salvarProduto}
-        />
+      />
 
       <ConfirmDialog
         open={openDelete}
@@ -255,6 +294,5 @@ const { granjaId } = useParams()
         textoConfirmar="Excluir"
       />
     </div>
-
-    )
+  )
 }

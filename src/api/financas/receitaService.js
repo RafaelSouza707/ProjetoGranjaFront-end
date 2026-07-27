@@ -1,13 +1,13 @@
 import api from "../axios";
 
-export async function listarReceitas(granjaId, pagina = 1) {
-    const response = await api.get("/financas/receita", {
+export async function listarReceitas(granjaId, params = {}) {
+    const response = await api.get(`/financas/receita`, {
         params: {
-            granja_id: granjaId,
-            pagina: pagina
+        granja_id: granjaId,
+        ...params
         }
     })
-    return response.data;
+    return response.data
 }
 
 export async function criarReceita(granjaId, data) {

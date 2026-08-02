@@ -64,8 +64,8 @@ export function ConsumoLote() {
     e?.preventDefault()
     setPage(1)
     setFiltrosAtivos({
-      data_inicio: filtroDataInicio || undefined,
-      data_fim: filtroDataFim || undefined,
+      data__gte: filtroDataInicio || undefined,
+      data__lte: filtroDataFim || undefined,
     })
   }
 

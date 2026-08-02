@@ -1,11 +1,12 @@
 import api from "../axios";
 
 export async function listarMortalidade(loteFrangoId, granjaId, params = {}) {
+    console.log(loteFrangoId, granjaId)
     const response = await api.get(`/granja/mortalidade`, {
         params: {
-        granja_id: granjaId,
-        lotes_frango: loteFrangoId,
-        ...params
+            granja_id: granjaId,
+            lote_frango_id: loteFrangoId,
+            ...params
         }
     })
     return response.data

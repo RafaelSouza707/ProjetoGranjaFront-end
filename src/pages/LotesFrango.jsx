@@ -144,7 +144,7 @@ export default function LotesFrango() {
   }
 
   function editar(item) {
-    setLoteSelecionado({ ...item, status_lote_frango_id: item.status?.id })
+    setLoteSelecionado({ ...item, status_lote_frango_id: item.status?.id, identificacao: item.identificacao.toUpperCase()})
     setOpen(true)
   }
 

@@ -6,6 +6,7 @@ export async function listarStatusFinancas(granjaId) {
             granja_id: granjaId
         }
     });
+    console.log(response)
     return response.data;
 }
 

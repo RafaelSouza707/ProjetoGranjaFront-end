@@ -5,6 +5,7 @@ import {
   CDropdownToggle,
   CDropdownMenu,
   CDropdownItem,
+  CDropdownDivider,
   CAvatar,
   CButton
 } from "@coreui/react"
@@ -14,7 +15,7 @@ import { cilUser, cilMenu, cilSwapHorizontal, cilBuilding, cilViewQuilt } from "
 import { useNavigate, useParams } from "react-router-dom"
 import { deslogar } from "@/api/usuario/logout_service"
 import { useAuth } from "@/components/utils/AuthContext"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { listarGranjas } from "@/api/granja/granjaService"
 
 export default function Topbar({
@@ -29,35 +30,32 @@ export default function Topbar({
   const { granjaId } = useParams()
 
   const [listaGranjas, setListaGranjas] = useState([])
-  const [dropdownGranjaAberto, setDropdownGranjaAberto] = useState(false)
-  const dropdownRef = useRef(null)
 
   const activeGranjaId = granjaId || granjaSelecionada?.id
 
   useEffect(() => {
     async function carregarGranjasTopbar() {
       try {
-        const dados = await listarGranjas()
-        setListaGranjas(dados ?? [])
-      } catch (error) {}
+        const resposta = await listarGranjas()
+        // Garante suporte tanto para array direto quanto para dados paginados ({ dados: [...] })
+        const granjas = Array.isArray(resposta) ? resposta : (resposta?.dados ?? [])
+        setListaGranjas(granjas)
+      } catch (error) {
+        console.error("Erro ao carregar granjas no Topbar:", error)
+      }
     }
     if (isAuthenticated) {
       carregarGranjasTopbar()
     }
   }, [isAuthenticated])
 
-  // Fecha o menu flutuante se clicar fora dele
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownGranjaAberto(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+  // Busca o objeto completo da granja atual
+  const granjaAtual = listaGranjas.find(g => String(g.id) === String(activeGranjaId)) || granjaSelecionada
 
-  const granjaAtualObj = listaGranjas.find(g => String(g.id) === String(activeGranjaId)) || granjaSelecionada
+  // Define o texto a ser exibido no topo (prioriza identificacao, depois nome, depois fallback)
+  const rotuloGranjaAtual = activeGranjaId
+    ? (granjaAtual?.identificacao || granjaAtual?.nome || `Granja #${activeGranjaId}`)
+    : 'Todas as Granjas'
 
   function trocarGranja(granja) {
     if (!granja) {
@@ -65,12 +63,11 @@ export default function Topbar({
       navigate('/')
     } else {
       selecionarGranja(
-        { id: granja.id, identificacao: granja.identificacao },
+        { id: granja.id, identificacao: granja.identificacao || granja.nome },
         granja.contexto
       )
       navigate(`/granja/${granja.id}/lotes_frangos`)
     }
-    setDropdownGranjaAberto(false)
   }
 
   async function handleLogout() {
@@ -107,51 +104,55 @@ export default function Topbar({
             ← Voltar
           </CButton>
 
-          {/* MENU FLUTUANTE DE GRANJAS NO TOPO (TOPBAR) */}
+          {/* NAVEGAÇÃO DE GRANJAS VIA CDROPDOWN DO COREUI */}
           {isAuthenticated && (
-            <div className="position-relative" ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownGranjaAberto(!dropdownGranjaAberto)}
-                className="btn btn-light border bg-white d-flex align-items-center gap-2 py-1.5 px-3 rounded-pill shadow-sm text-start"
-                type="button"
-                style={{ fontSize: '13px', minWidth: '180px', maxWidth: '240px' }}
+            <CDropdown variant="btn-group">
+              <CDropdownToggle
+                color="light"
+                className="border bg-white d-flex align-items-center gap-2 py-1.5 px-3 rounded-pill shadow-sm text-start"
+                style={{ fontSize: '13px', minWidth: '180px', maxWidth: '260px' }}
               >
                 <CIcon icon={cilBuilding} className="text-secondary flex-shrink-0" size="sm" />
                 <span className="text-dark fw-semibold text-truncate flex-grow-1">
-                  {activeGranjaId ? (granjaAtualObj?.identificacao || `Granja #${activeGranjaId}`) : 'Todas as Granjas'}
+                  {rotuloGranjaAtual}
                 </span>
-                <CIcon icon={cilSwapHorizontal} className="text-muted flex-shrink-0" size="sm" style={{ width: '12px', height: '12px' }} />
-              </button>
+                <CIcon icon={cilSwapHorizontal} className="text-muted flex-shrink-0 ms-1" size="sm" style={{ width: '12px', height: '12px' }} />
+              </CDropdownToggle>
 
-              {dropdownGranjaAberto && (
-                <div className="position-absolute top-100 start-0 mt-2 bg-white border shadow-lg rounded-xl z-3 py-1 overflow-hidden" style={{ minWidth: '220px' }}>
-                  <button
-                    onClick={() => trocarGranja(null)}
-                    className={`w-100 text-start px-3 py-2 text-dark border-0 bg-transparent d-flex align-items-center gap-2 text-decoration-none ${!activeGranjaId ? 'fw-bold bg-light' : ''}`}
-                    style={{ fontSize: '12px' }}
-                  >
-                    <CIcon icon={cilViewQuilt} size="sm" />
-                    <span>Todas as Granjas</span>
-                  </button>
+              <CDropdownMenu className="shadow-lg rounded-xl py-1" style={{ minWidth: '220px' }}>
+                <CDropdownItem
+                  as="button"
+                  onClick={() => trocarGranja(null)}
+                  className={`d-flex align-items-center gap-2 py-2 ${!activeGranjaId ? 'fw-bold bg-light' : ''}`}
+                  style={{ fontSize: '12px' }}
+                >
+                  <CIcon icon={cilViewQuilt} size="sm" />
+                  <span>Todas as Granjas</span>
+                </CDropdownItem>
 
-                  {listaGranjas.length > 0 && <div className="dropdown-divider my-1"></div>}
+                {listaGranjas.length > 0 && <CDropdownDivider />}
 
-                  <div className="overflow-auto" style={{ maxHeight: '180px' }}>
-                    {listaGranjas.map((g) => (
-                      <button
+                <div className="overflow-auto" style={{ maxHeight: '200px' }}>
+                  {listaGranjas.map((g) => {
+                    const isSelected = String(activeGranjaId) === String(g.id)
+                    const nomeExibicao = g.identificacao || g.nome || `Granja #${g.id}`
+
+                    return (
+                      <CDropdownItem
                         key={g.id}
+                        as="button"
                         onClick={() => trocarGranja(g)}
-                        className={`w-100 text-start px-3 py-2 text-dark border-0 bg-transparent d-flex align-items-center gap-2 text-truncate ${String(activeGranjaId) === String(g.id) ? 'fw-bold bg-light text-danger' : ''}`}
+                        className={`d-flex align-items-center gap-2 py-2 text-truncate ${isSelected ? 'fw-bold bg-light text-primary' : ''}`}
                         style={{ fontSize: '12px' }}
                       >
                         <CIcon icon={cilBuilding} size="sm" className="flex-shrink-0" />
-                        <span className="text-truncate">{g.identificacao}</span>
-                      </button>
-                    ))}
-                  </div>
+                        <span className="text-truncate">{nomeExibicao}</span>
+                      </CDropdownItem>
+                    )
+                  })}
                 </div>
-              )}
-            </div>
+              </CDropdownMenu>
+            </CDropdown>
           )}
         </div>
 

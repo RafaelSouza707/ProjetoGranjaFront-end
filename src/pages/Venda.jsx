@@ -25,6 +25,7 @@ import { listarStatusFinancas } from "@/api/financas/statusFinancasService"
 import { listarProdutos } from "@/api/venda_Estoque/produtoService"
 
 import { formatarMoeda } from "@/utils/formatters"
+import { handleApiError } from "@/utils/handleApiError"
 
 export default function Venda() {
   const { granjaId } = useParams()
@@ -86,11 +87,12 @@ export default function Venda() {
 
       const listaVendas = Array.isArray(payload?.dados) ? payload.dados : (Array.isArray(payload) ? payload : [])
       const paginacao = payload?.pagination ?? null
-
+      
+      console.log(listaVendas)
       setVendas(listaVendas)
       setPagination(paginacao)
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
       setVendas([])
     }
   }
@@ -115,7 +117,7 @@ export default function Venda() {
       const dados = await listarProdutos(granjaId, -1)
       setProdutos(dados.dados ?? [])
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -124,7 +126,7 @@ export default function Venda() {
       const dados = await listarTipoVenda(granjaId)
       setTiposVenda(dados ?? [])
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -133,7 +135,7 @@ export default function Venda() {
       const dados = await listarStatusFinancas(granjaId)
       setStatusFinancas(dados ?? [])
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -240,7 +242,7 @@ export default function Venda() {
       setVendaSelecionada(null)
       await carregarVendas()
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -252,7 +254,7 @@ export default function Venda() {
       setVendaDelete(null)
       await carregarVendas()
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -261,7 +263,7 @@ export default function Venda() {
       const dados = await listarClientes(granjaId)
       setClientes(dados ?? [])
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -277,7 +279,7 @@ export default function Venda() {
       setClienteSelecionado(null)
       await carregarClientes()
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 
@@ -288,7 +290,7 @@ export default function Venda() {
       setOpenClienteDelete(false)
       await carregarClientes()
     } catch (error) {
-      console.error(error)
+      handleApiError(error)
     }
   }
 

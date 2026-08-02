@@ -28,7 +28,6 @@ export function MortalidadeLote() {
   const [openDelete, setOpenDelete] = useState(false)
   const [mortalidadeDelete, setMortalidadeDelete] = useState(null)
 
-  // Estados de Filtro
   const [filtroDataInicio, setFiltroDataInicio] = useState("")
   const [filtroDataFim, setFiltroDataFim] = useState("")
   const [termoBusca, setTermoBusca] = useState("")
@@ -45,6 +44,7 @@ export function MortalidadeLote() {
       if (termoBusca) params.search = termoBusca
 
       const dados = await listarMortalidade(loteFrangoId, granjaId, params)
+      console.log(dados)
       setMortalidades(dados.dados ?? [])
       setPagination(dados.pagination)
     } catch (error) {
@@ -56,8 +56,8 @@ export function MortalidadeLote() {
     e?.preventDefault()
     setPage(1)
     setFiltrosAtivos({
-      data_inicio: filtroDataInicio || undefined,
-      data_fim: filtroDataFim || undefined,
+      data__gte: filtroDataInicio || undefined,
+      data__lte: filtroDataFim || undefined,
     })
   }
 

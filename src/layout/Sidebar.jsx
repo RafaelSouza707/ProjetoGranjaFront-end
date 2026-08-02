@@ -21,7 +21,7 @@ import {
 import { useAuth } from '@/components/utils/AuthContext'
 
 export default function Sidebar({ visible, setVisible, isMobile }) {
-  const { granjaSelecionada } = useAuth()
+  const { granjaSelecionada, temPermissao } = useAuth()
   const { granjaId } = useParams()
 
   const activeGranjaId = granjaId || granjaSelecionada?.id
@@ -67,42 +67,60 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
         {activeGranjaId && (
           <>
             <CNavTitle className="mt-2">Módulos da Granja</CNavTitle>
-            <CNavItem>
-              <NavLink to={`/granja/${activeGranjaId}/lotes_frangos`} className={navLinkClass}>
-                <CIcon customClassName="nav-icon" icon={cilLayers} />
-                Lotes de Frangos
-              </NavLink>
-            </CNavItem>
-            <CNavItem>
-              <NavLink to={`/granja/${activeGranjaId}/produtos`} className={navLinkClass}>
-                <CIcon customClassName="nav-icon" icon={cilFastfood} />
-                Produtos & Estoque
-              </NavLink>
-            </CNavItem>
-            <CNavItem>
-              <NavLink to={`/granja/${activeGranjaId}/lote_racao`} className={navLinkClass}>
-                <CIcon customClassName="nav-icon" icon={cilFastfood} />
-                Lote de Ração
-              </NavLink>
-            </CNavItem>
-            <CNavItem>
-              <NavLink to={`/granja/${activeGranjaId}/vendas`} className={navLinkClass}>
-                <CIcon customClassName="nav-icon" icon={cilCart} />
-                Vendas
-              </NavLink>
-            </CNavItem>
-            <CNavItem>
-              <NavLink to={`/granja/${activeGranjaId}/financas`} className={navLinkClass}>
-                <CIcon customClassName="nav-icon" icon={cilDollar} />
-                Finanças
-              </NavLink>
-            </CNavItem>
-            <CNavItem>
-              <NavLink to={`/configuracoes/${activeGranjaId}`} className={navLinkClass}>
-                <CIcon customClassName="nav-icon" icon={cilSettings} />
-                Configurações
-              </NavLink>
-            </CNavItem>
+
+            {temPermissao("AVIARIO") && (
+              <CNavItem>
+                <NavLink to={`/granja/${activeGranjaId}/lotes_frangos`} className={navLinkClass}>
+                  <CIcon customClassName="nav-icon" icon={cilLayers} />
+                  Lotes de Frangos
+                </NavLink>
+              </CNavItem>
+            )}
+
+            {temPermissao("ESTOQUE") && (
+              <CNavItem>
+                <NavLink to={`/granja/${activeGranjaId}/produtos`} className={navLinkClass}>
+                  <CIcon customClassName="nav-icon" icon={cilFastfood} />
+                  Produtos & Estoque
+                </NavLink>
+              </CNavItem>
+            )}
+
+            {temPermissao("AVIARIO") && (
+              <CNavItem>
+                <NavLink to={`/granja/${activeGranjaId}/lote_racao`} className={navLinkClass}>
+                  <CIcon customClassName="nav-icon" icon={cilFastfood} />
+                  Lote de Ração
+                </NavLink>
+              </CNavItem>
+            )}
+
+            {temPermissao("VENDA") && (
+              <CNavItem>
+                <NavLink to={`/granja/${activeGranjaId}/vendas`} className={navLinkClass}>
+                  <CIcon customClassName="nav-icon" icon={cilCart} />
+                  Vendas
+                </NavLink>
+              </CNavItem>
+            )}
+
+            {temPermissao("FINANCAS") && (
+              <CNavItem>
+                <NavLink to={`/granja/${activeGranjaId}/financas`} className={navLinkClass}>
+                  <CIcon customClassName="nav-icon" icon={cilDollar} />
+                  Finanças
+                </NavLink>
+              </CNavItem>
+            )}
+
+            {temPermissao("GRANJA") && (
+              <CNavItem>
+                <NavLink to={`/configuracoes/${activeGranjaId}`} className={navLinkClass}>
+                  <CIcon customClassName="nav-icon" icon={cilSettings} />
+                  Configurações
+                </NavLink>
+              </CNavItem>
+            )}
           </>
         )}
       </CSidebarNav>

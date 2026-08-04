@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 
 import Tabela from "@/components/Genericos/Tabela"
-import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
 import { useParams, useSearchParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { ArrowDownCircle, Wallet } from "lucide-react"
 
 import { cardsGastosGranja, listarDespesas, criarDespesa, deletarDespesa, atualizarDespesa } from "@/api/financas/despesaService"
 import { listarTiposDespesa } from "@/api/financas/tipoDespesaService"
@@ -264,18 +264,35 @@ export default function Despesas() {
     <div className="p-6 space-y-6">
       <h1 className="text-4xl font-bold">Despesas</h1>
       
-      <GenericCards cards={[
-        {
-          titulo: "Total Gasto no mês",
-          valor: formatarMoeda(cardsDespesas?.total_gasto_mes_granja ?? 0),
-          cor: "text-red-600",
-        },
-        {
-          titulo: "Maior gasto no mês",
-          valor: formatarMoeda(cardsDespesas?.maior_gasto_mes_granja?.valor ?? 0),
-          descricao: cardsDespesas?.maior_gasto?.tipo_despesa ?? "",
-        },
-      ]}/>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-500">Total Gasto no Mês</span>
+            <p className="text-2xl font-bold text-red-600">
+              {formatarMoeda(cardsDespesas?.total_gasto_mes_granja ?? 0)}
+            </p>
+            <span className="text-xs text-slate-400">Custos operacionais no mês atual</span>
+          </div>
+          <div className="p-3 bg-red-50 rounded-full text-red-600">
+            <ArrowDownCircle className="size-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-500">Maior Gasto no Mês</span>
+            <p className="text-2xl font-bold text-red-600">
+              {formatarMoeda(cardsDespesas?.maior_gasto_mes_granja?.valor ?? 0)}
+            </p>
+            <span className="text-xs text-slate-400">
+              {cardsDespesas?.maior_gasto?.tipo_despesa ? `Tipo: ${cardsDespesas.maior_gasto.tipo_despesa}` : "Maior saída registrada"}
+            </span>
+          </div>
+          <div className="p-3 bg-red-50 rounded-full text-red-600">
+            <Wallet className="size-6" />
+          </div>
+        </div>
+      </div>
 
       <Tabela
         dados={despesas}

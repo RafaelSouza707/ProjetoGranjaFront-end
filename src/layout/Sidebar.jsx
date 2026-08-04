@@ -17,6 +17,7 @@ import {
   cilCart,
   cilDollar,
   cilSettings,
+  cilFactory
 } from '@coreui/icons'
 import { useAuth } from '@/components/utils/AuthContext'
 
@@ -80,7 +81,7 @@ export default function Sidebar({ visible, setVisible, isMobile }) {
             {temPermissao("ESTOQUE") && (
               <CNavItem>
                 <NavLink to={`/granja/${activeGranjaId}/produtos`} className={navLinkClass}>
-                  <CIcon customClassName="nav-icon" icon={cilFastfood} />
+                  <CIcon customClassName="nav-icon" icon={cilFactory} />
                   Produtos & Estoque
                 </NavLink>
               </CNavItem>

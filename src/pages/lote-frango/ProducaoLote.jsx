@@ -163,9 +163,9 @@ export function ProducaoLote() {
       render: (item) => formatarQuantidade(item.quantidade)
     },
     {
-      key: "data_producao",
+      key: "data",
       label: "Data",
-      render: (item) => formatarData(item.data_producao)
+      render: (item) => formatarData(item.data)
     },
     { key: "observacao", label: "Observação" },
   ]
@@ -187,7 +187,7 @@ export function ProducaoLote() {
       type: "text",
     },
     {
-      name: "data_producao",
+      name: "data",
       label: "Data de Produção",
       type: "date",
       required: true,

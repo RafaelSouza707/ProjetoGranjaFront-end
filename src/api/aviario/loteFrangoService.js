@@ -2,7 +2,6 @@ import api from "../axios";
 
 export async function listarLoteFrangos(granjaId){
     const response = await api.get(`/granja/lote_frango?granja_id=${granjaId}`);
-    console.log(response.data)
     return response.data;
 }
 

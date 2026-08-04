@@ -88,7 +88,6 @@ export default function Venda() {
       const listaVendas = Array.isArray(payload?.dados) ? payload.dados : (Array.isArray(payload) ? payload : [])
       const paginacao = payload?.pagination ?? null
       
-      console.log(listaVendas)
       setVendas(listaVendas)
       setPagination(paginacao)
     } catch (error) {

@@ -44,7 +44,6 @@ export function MortalidadeLote() {
       if (termoBusca) params.search = termoBusca
 
       const dados = await listarMortalidade(loteFrangoId, granjaId, params)
-      console.log(dados)
       setMortalidades(dados.dados ?? [])
       setPagination(dados.pagination)
     } catch (error) {

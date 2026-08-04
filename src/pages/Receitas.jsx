@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 
 import Tabela from "@/components/Genericos/Tabela"
-import GenericCards from "@/components/Genericos/GenericCards"
 import ModalForm from "@/components/Genericos/ModalForm"
+import { ArrowUpCircle, DollarSign, TrendingUp } from "lucide-react"
 import ConfirmDialog from "@/components/Genericos/ConfirmDialog"
 import { Button } from "@/components/ui/button"
 
@@ -283,28 +283,50 @@ export default function Receitas() {
         Receitas
       </h1>
 
-      <GenericCards
-        cards={[
-          {
-            titulo: "Total arrecadado no mês",
-            valor: formatarMoeda(
-              cardsReceitas?.card_receita_valor_total_venda_mes_granja ?? cardsReceitas?.card_receita_valor_total_venda_mes_graja ?? 0
-            ),
-            cor: "text-green-600",
-          },
-          {
-            titulo: "Total de receita no mês",
-            valor:
-              cardsReceitas?.card_receita_total_vendas_mes_granja ?? 0,
-          },
-          {
-            titulo: "Maior receita no mês",
-            valor: formatarMoeda(
-              cardsReceitas?.card_receita_maior_receita_mes?.valor ?? 0
-            ),
-          },
-        ]}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-500">Total Arrecadado no Mês</span>
+            <p className="text-2xl font-bold text-green-600">
+              {formatarMoeda(
+                cardsReceitas?.card_receita_valor_total_venda_mes_granja ?? cardsReceitas?.card_receita_valor_total_venda_mes_graja ?? 0
+              )}
+            </p>
+            <span className="text-xs text-slate-400">Entradas gerais do mês atual</span>
+          </div>
+          <div className="p-3 bg-green-50 rounded-full text-green-600">
+            <ArrowUpCircle className="size-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-500">Total de Receitas no Mês</span>
+            <p className="text-2xl font-bold text-slate-900">
+              {cardsReceitas?.card_receita_total_vendas_mes_granja ?? 0}
+            </p>
+            <span className="text-xs text-slate-400">Quantidade de registros</span>
+          </div>
+          <div className="p-3 bg-emerald-50 rounded-full text-emerald-600">
+            <DollarSign className="size-6" />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-500">Maior Receita no Mês</span>
+            <p className="text-2xl font-bold text-green-600">
+              {formatarMoeda(
+                cardsReceitas?.card_receita_maior_receita_mes?.valor ?? 0
+              )}
+            </p>
+            <span className="text-xs text-slate-400">Pico de entrada no período</span>
+          </div>
+          <div className="p-3 bg-green-50 rounded-full text-green-600">
+            <TrendingUp className="size-6" />
+          </div>
+        </div>
+      </div>
 
       <Tabela
         dados={receitas}

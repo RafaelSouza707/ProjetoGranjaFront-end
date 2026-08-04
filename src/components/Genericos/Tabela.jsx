@@ -277,31 +277,50 @@ export default function Tabela({
                     )}
 
                     {onEditar && (
-                      <CTooltip content="Editar nome da Granja" animation={false}>
-                        <Button
-                        variant="ghost"
-                          size="icon"
-                          className="h-15 w-15"
-                          onClick={() => onEditar(item)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                      <CTooltip
+                        content={
+                          item.venda_id
+                            ? "Esta receita foi gerada por uma venda. Utilize o módulo de Vendas para alterá-la."
+                            : "Editar"
+                        }
+                        animation={false}
+                      >
+                        <span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-15 w-15"
+                            disabled={!!item.venda_id}
+                            onClick={() => onEditar(item)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </span>
                       </CTooltip>
                     )}
 
                     {onExcluir && (
-                      <CTooltip content="Excluir"  animation={false}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-15 w-15"
-                          onClick={() => onExcluir(item)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                      <CTooltip
+                        content={
+                          item.venda_id
+                            ? "Esta receita foi gerada por uma venda. Utilize o módulo de Vendas para excluí-la."
+                            : "Excluir"
+                        }
+                        animation={false}
+                      >
+                        <span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-15 w-15"
+                            disabled={!!item.venda_id}
+                            onClick={() => onExcluir(item)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </span>
                       </CTooltip>
                     )}
-
 
                     {
                       onConfigurar && (

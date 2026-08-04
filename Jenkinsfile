@@ -30,7 +30,7 @@ pipeline {
                         -v "$PWD:/app" \
                         -w /app \
                         node:22-alpine \
-                        sh -c "npm ci && npm run build"
+                        sh -c "npm install && npm run build"
                 '''
             }
         }

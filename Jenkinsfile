@@ -20,15 +20,15 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Instalando dependencias e compilando o frontend...'
-                sh 'docker run --rm -v "${env.WORKSPACE}:/app" -w /app node:22-alpine npm install'
-                sh 'docker run --rm -v "${env.WORKSPACE}:/app" -w /app node:22-alpine npm run build'
+                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:22-alpine npm install'
+                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:22-alpine npm run build'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Verificando o artefato gerado pelo build...'
-                sh 'docker run --rm -v "${env.WORKSPACE}:/app" -w /app node:22-alpine test -f dist/index.html'
+                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:22-alpine test -f dist/index.html'
             }
         }
 

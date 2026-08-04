@@ -29,9 +29,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Instalando dependencias e compilando o frontend...'
+                echo 'Inspecionando arquivos e instalando dependencias...'
 
                 sh '''
+                    echo "--- Conteudo da raiz do workspace ---"
+                    ls -la
+                    
+                    echo "--- Executando Build via Docker ---"
                     docker run --rm \
                         -v "$PWD/${PROJECT_DIR}:/app" \
                         -w /app \

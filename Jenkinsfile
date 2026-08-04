@@ -29,15 +29,10 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Inspecionando arquivos e instalando dependencias...'
+                echo 'Instalando dependencias e compilando o frontend...'
 
-                sh '''
-                    docker run --rm \
-                        -v "$PWD/${PROJECT_DIR}:/app" \
-                        -w /app \
-                        node:22-alpine \
-                        sh -c "npm install && npm run build"
-                '''
+                sh 'docker run --rm -v "$PWD/${PROJECT_DIR}:/app" -w /app node:22-alpine npm install'
+                sh 'docker run --rm -v "$PWD/${PROJECT_DIR}:/app" -w /app node:22-alpine npm run build'
             }
         }
 

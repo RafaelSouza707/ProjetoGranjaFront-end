@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     environment {
@@ -9,7 +8,6 @@ pipeline {
     }
 
     stages {
-
         stage('Cleanup') {
             steps {
                 echo 'Limpando arquivos anteriores...'
@@ -57,10 +55,7 @@ pipeline {
                 echo 'Verificando se o container esta rodando e respondendo...'
                 sh '''
                     sleep 3
-                    # Verifica se o container esta ativo
                     docker inspect -f '{{.State.Running}}' $CONTAINER_NAME
-                    
-                    # Testa a resposta interna do Nginx dentro do container
                     docker exec $CONTAINER_NAME wget -qO- http://localhost/ > /dev/null
                 '''
             }
@@ -81,12 +76,12 @@ pipeline {
                             --password-stdin
 
                         docker push $IMAGE_NAME:latest
-                        
                         docker logout
                     '''
                 }
             }
         }
+    }
 
     post {
         always {

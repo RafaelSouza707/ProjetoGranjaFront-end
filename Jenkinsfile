@@ -10,8 +10,11 @@ pipeline {
     stages {
         stage('Cleanup') {
             steps {
-                echo 'Limpando arquivos anteriores...'
-                sh 'rm -rf node_modules dist'
+                echo 'Limpando arquivos anteriores e credenciais residuais...'
+                sh '''
+                    rm -rf node_modules dist
+                    docker logout || true
+                '''
             }
         }
 

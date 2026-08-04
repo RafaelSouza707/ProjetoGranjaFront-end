@@ -16,8 +16,13 @@ pipeline {
                 echo 'Limpando arquivos anteriores...'
 
                 sh '''
-                    rm -rf ${PROJECT_DIR}/node_modules
-                    rm -rf ${PROJECT_DIR}/dist
+                    if [ -n "${PROJECT_DIR}" ]; then
+                        rm -rf ${PROJECT_DIR}/node_modules
+                        rm -rf ${PROJECT_DIR}/dist
+                    else
+                        rm -rf node_modules
+                        rm -rf dist
+                    fi
                 '''
             }
         }
@@ -55,8 +60,10 @@ pipeline {
                 echo 'Construindo e executando o container...'
 
                 sh '''
-                    # O Dockerfile precisa estar na pasta do projeto ou na raiz onde aponta o contexto (.)
-                    cd ${PROJECT_DIR}
+                    if [ -n "${PROJECT_DIR}" ]; then
+                        cd ${PROJECT_DIR}
+                    fi
+                    
                     docker build -t $IMAGE_NAME:latest .
 
                     docker rm -f $CONTAINER_NAME || true

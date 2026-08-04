@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'rafaelms707/atividade5_pipelinedojenkins'
         CONTAINER_NAME = 'atividade5-frontend'
         CONTAINER_PORT = '8081'
-        PROJECT_DIR = 'ProjetoGranjaFront-end'
+        PROJECT_DIR = ''
     }
 
     stages {

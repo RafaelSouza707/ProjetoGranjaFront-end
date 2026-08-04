@@ -54,10 +54,14 @@ pipeline {
 
         stage('Smoke Test') {
             steps {
-                echo 'Verificando se o frontend esta respondendo...'
+                echo 'Verificando se o container esta rodando e respondendo...'
                 sh '''
-                    sleep 5
-                    curl --fail http://localhost:$CONTAINER_PORT
+                    sleep 3
+                    # Verifica se o container esta ativo
+                    docker inspect -f '{{.State.Running}}' $CONTAINER_NAME
+                    
+                    # Testa a resposta interna do Nginx dentro do container
+                    docker exec $CONTAINER_NAME wget -qO- http://localhost/ > /dev/null
                 '''
             }
         }

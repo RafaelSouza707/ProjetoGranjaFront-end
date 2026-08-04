@@ -31,8 +31,8 @@ pipeline {
             steps {
                 echo 'Instalando dependencias e compilando o frontend...'
 
-                sh 'docker run --rm -v "$PWD/${PROJECT_DIR}:/app" -w /app node:22-alpine npm install'
-                sh 'docker run --rm -v "$PWD/${PROJECT_DIR}:/app" -w /app node:22-alpine npm run build'
+                sh "docker run --rm -v \"${env.WORKSPACE}/${PROJECT_DIR}:/app\" -w /app node:22-alpine npm install"
+                sh "docker run --rm -v \"${env.WORKSPACE}/${PROJECT_DIR}:/app\" -w /app node:22-alpine npm run build"
             }
         }
 

@@ -20,14 +20,13 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Instalando dependencias e compilando o frontend...'
-                // Executa o npm diretamente no workspace atual se houver node instalado, 
-                // ou usa um container Docker garantindo o caminho absoluto correto do workspace
                 sh '''
-                    docker run --rm \
-                        -v "$(pwd):/app" \
-                        -w /app \
-                        node:22-alpine \
-                        sh -c "npm install && npm run build"
+                    CONTAINER_ID=$(docker create node:22-alpine sh -c "cd /app && npm install && npm run build")
+                    docker cp . $CONTAINER_ID:/app
+                    docker start -a $CONTAINER_ID
+                    docker cp $CONTAINER_ID:/app/node_modules ./node_modules
+                    docker cp $CONTAINER_ID:/app/dist ./dist
+                    docker rm $CONTAINER_ID
                 '''
             }
         }
@@ -35,13 +34,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Verificando o artefato gerado pelo build...'
-                sh '''
-                    docker run --rm \
-                        -v "$(pwd):/app" \
-                        -w /app \
-                        node:22-alpine \
-                        test -f dist/index.html
-                '''
+                sh 'test -f dist/index.html'
             }
         }
 

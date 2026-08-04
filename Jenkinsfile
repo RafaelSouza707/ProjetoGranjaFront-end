@@ -19,10 +19,12 @@ pipeline {
                     rm -rf dist
                 '''
             }
-        }git 
+        }
 
         stage('Build') {
             steps {
+                echo 'Instalando dependencias e compilando o frontend...'
+
                 sh '''
                     docker run --rm \
                         -v "$PWD:/app" \
@@ -35,6 +37,8 @@ pipeline {
 
         stage('Test') {
             steps {
+                echo 'Verificando o artefato gerado pelo build...'
+
                 sh '''
                     docker run --rm \
                         -v "$PWD:/app" \

@@ -81,12 +81,12 @@ pipeline {
                             --password-stdin
 
                         docker push $IMAGE_NAME:latest
+                        
                         docker logout
                     '''
                 }
             }
         }
-    }
 
     post {
         always {

@@ -20,15 +20,28 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Instalando dependencias e compilando o frontend...'
-                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:22-alpine npm install'
-                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:22-alpine npm run build'
+                // Executa o npm diretamente no workspace atual se houver node instalado, 
+                // ou usa um container Docker garantindo o caminho absoluto correto do workspace
+                sh '''
+                    docker run --rm \
+                        -v "$(pwd):/app" \
+                        -w /app \
+                        node:22-alpine \
+                        sh -c "npm install && npm run build"
+                '''
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Verificando o artefato gerado pelo build...'
-                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:22-alpine test -f dist/index.html'
+                sh '''
+                    docker run --rm \
+                        -v "$(pwd):/app" \
+                        -w /app \
+                        node:22-alpine \
+                        test -f dist/index.html
+                '''
             }
         }
 

@@ -6,6 +6,7 @@ pipeline {
         IMAGE_NAME = 'rafaelms707/atividade5_pipelinedojenkins'
         CONTAINER_NAME = 'atividade5-frontend'
         CONTAINER_PORT = '8081'
+        PROJECT_DIR = 'ProjetoGranjaFront-end'
     }
 
     stages {
@@ -15,8 +16,8 @@ pipeline {
                 echo 'Limpando arquivos anteriores...'
 
                 sh '''
-                    rm -rf node_modules
-                    rm -rf dist
+                    rm -rf ${PROJECT_DIR}/node_modules
+                    rm -rf ${PROJECT_DIR}/dist
                 '''
             }
         }
@@ -27,7 +28,7 @@ pipeline {
 
                 sh '''
                     docker run --rm \
-                        -v "$PWD:/app" \
+                        -v "$PWD/${PROJECT_DIR}:/app" \
                         -w /app \
                         node:22-alpine \
                         sh -c "npm install && npm run build"
@@ -41,7 +42,7 @@ pipeline {
 
                 sh '''
                     docker run --rm \
-                        -v "$PWD:/app" \
+                        -v "$PWD/${PROJECT_DIR}:/app" \
                         -w /app \
                         node:22-alpine \
                         sh -c "test -f dist/index.html"
@@ -54,6 +55,8 @@ pipeline {
                 echo 'Construindo e executando o container...'
 
                 sh '''
+                    # O Dockerfile precisa estar na pasta do projeto ou na raiz onde aponta o contexto (.)
+                    cd ${PROJECT_DIR}
                     docker build -t $IMAGE_NAME:latest .
 
                     docker rm -f $CONTAINER_NAME || true

@@ -41,6 +41,8 @@ export default function Venda() {
   const [openVendaModal, setOpenVendaModal] = useState(false)
 
   const [vendaSelecionada, setVendaSelecionada] = useState(null)
+  const [errosCampos, setErrosCampos] = useState({})
+  const [errosItens, setErrosItens] = useState([])
   const [formVenda, setFormVenda] = useState({
     cliente_id: "",
     tipo_venda_id: "",
@@ -140,6 +142,8 @@ export default function Venda() {
 
   function novaVenda() {
     setVendaSelecionada(null)
+    setErrosCampos({})
+    setErrosItens([])
     setFormVenda({
       cliente_id: "consumidor_final",
       tipo_venda_id: "",
@@ -152,6 +156,8 @@ export default function Venda() {
 
   function editarVenda(item) {
     setVendaSelecionada(item)
+    setErrosCampos({})
+    setErrosItens([])
     
     setFormVenda({
       cliente_id: item.cliente_id !== null && item.cliente_id !== undefined ? String(item.cliente_id) : "consumidor_final",
@@ -166,6 +172,7 @@ export default function Venda() {
       const valTotal = qtd > 0 ? (qtd * subTot).toFixed(2) : "0"
 
       return { 
+        id: i.id,
         produto_id: i.produto_id !== null && i.produto_id !== undefined ? String(i.produto_id) : "", 
         quantidade: String(qtd),
         subtotal: String(subTot),
@@ -208,12 +215,52 @@ export default function Venda() {
   async function salvarVenda(e) {
     e.preventDefault()
 
-    const itensValidos = itensVenda.filter(item => item.produto_id && Number(item.quantidade) > 0)
-    if (itensValidos.length === 0) {
-      alert("Por favor, adicione pelo menos um produto válido com quantidade.")
+    const novosErrosCampos = {}
+
+    if (!formVenda.cliente_id || formVenda.cliente_id === "") {
+      novosErrosCampos.cliente_id = "Selecione o cliente da venda."
+    }
+
+    if (!formVenda.tipo_venda_id || formVenda.tipo_venda_id === "") {
+      novosErrosCampos.tipo_venda_id = "Selecione o tipo de venda."
+    }
+
+    if (!formVenda.status_financas_id || formVenda.status_financas_id === "") {
+      novosErrosCampos.status_financas_id = "Selecione o status financeiro."
+    }
+
+    if (!formVenda.data_venda) {
+      novosErrosCampos.data_venda = "Informe a data da venda."
+    }
+
+    const errosItensDaVenda = itensVenda.map(item => {
+      const mensagens = []
+
+      if (!item.produto_id) {
+        mensagens.push("Selecione um produto.")
+      }
+
+      if (!item.quantidade || Number(item.quantidade) <= 0) {
+        mensagens.push("Informe uma quantidade maior que zero.")
+      }
+
+      if (!item.subtotal || Number(item.subtotal) <= 0) {
+        mensagens.push("Informe um preço unitário válido.")
+      }
+
+      return mensagens
+    })
+
+    const temErroItem = errosItensDaVenda.some(mensagens => mensagens.length > 0)
+
+    setErrosCampos(novosErrosCampos)
+    setErrosItens(errosItensDaVenda)
+
+    if (Object.keys(novosErrosCampos).length > 0 || temErroItem) {
       return
     }
 
+    const itensValidos = itensVenda.filter(item => item.produto_id && Number(item.quantidade) > 0 && Number(item.subtotal) > 0)
     const valorTotalVenda = itensValidos.reduce((acc, item) => acc + (Number(item.valor_total) || 0), 0)
 
     const payload = {
@@ -224,6 +271,7 @@ export default function Venda() {
       data_venda: formVenda.data_venda,
       valor_total: valorTotalVenda,
       itens: itensValidos.map(item => ({
+        ...(item.id && { id: item.id }),
         produto_id: Number(item.produto_id),
         quantidade: Number(item.quantidade),
         subtotal: Number(item.subtotal) || 0
@@ -324,7 +372,7 @@ export default function Venda() {
 
   const camposCliente = [
     { name: "nome", label: "Nome", type: "text", required: true, maxLength: 128 },
-    { name: "documento", label: "CPF/CNPJ", type: "text" },
+    { name: "documento", label: "CPF/CNPJ", type: "text"},
     { name: "telefone", label: "Telefone", type: "text", maxLength: 32 },
     { name: "email", label: "Email", type: "email", maxLength: 128 }
   ]
@@ -337,6 +385,7 @@ export default function Venda() {
         const valTotal = qtd > 0 ? (qtd * subTot).toFixed(2) : "0"
 
         return { 
+          id: i.id,
           produto_id: i.produto_id !== null && i.produto_id !== undefined ? String(i.produto_id) : "", 
           quantidade: String(qtd),
           subtotal: String(subTot),
@@ -432,14 +481,21 @@ export default function Venda() {
             </div>
             
             <form onSubmit={salvarVenda} className="flex-1 overflow-y-auto p-6 py-4 space-y-5">
+              {(Object.keys(errosCampos).length > 0 || errosItens.some((itensErro) => itensErro.length > 0)) && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  Preencha todos os campos obrigatórios antes de salvar.
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Cliente</Label>
                   <Select 
+                    required
                     value={formVenda.cliente_id ? String(formVenda.cliente_id) : "consumidor_final"} 
                     onValueChange={(val) => setFormVenda({...formVenda, cliente_id: val === "consumidor_final" ? "consumidor_final" : Number(val)})}
                   >
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className={`w-full bg-white ${errosCampos.cliente_id ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
                       <SelectValue placeholder="Selecione um cliente">
                         {formVenda.cliente_id === "consumidor_final" 
                           ? "Consumidor Final" 
@@ -451,20 +507,23 @@ export default function Venda() {
                       {clientes.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {errosCampos.cliente_id && <p className="text-sm text-red-600">{errosCampos.cliente_id}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label>Data da Venda</Label>
-                  <Input type="date" required value={formVenda.data_venda} onChange={(e) => setFormVenda({...formVenda, data_venda: e.target.value})} />
+                  <Input type="date" required value={formVenda.data_venda} onChange={(e) => setFormVenda({...formVenda, data_venda: e.target.value})} className={errosCampos.data_venda ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  {errosCampos.data_venda && <p className="text-sm text-red-600">{errosCampos.data_venda}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label>Tipo Venda</Label>
                   <Select 
+                    required
                     value={formVenda.tipo_venda_id ? String(formVenda.tipo_venda_id) : ""} 
                     onValueChange={(val) => setFormVenda({...formVenda, tipo_venda_id: Number(val)})}
                   >
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className={`w-full bg-white ${errosCampos.tipo_venda_id ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
                       <SelectValue placeholder="Selecione um tipo">
                         {tiposVenda.find(t => String(t.id) === String(formVenda.tipo_venda_id))?.nome || "Selecione um tipo"}
                       </SelectValue>
@@ -473,15 +532,17 @@ export default function Venda() {
                       {tiposVenda.map(t => <SelectItem key={t.id} value={String(t.id)}>{t.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {errosCampos.tipo_venda_id && <p className="text-sm text-red-600">{errosCampos.tipo_venda_id}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label>Status Financeiro</Label>
                   <Select 
+                    required
                     value={formVenda.status_financas_id ? String(formVenda.status_financas_id) : ""} 
                     onValueChange={(val) => setFormVenda({...formVenda, status_financas_id: Number(val)})}
                   >
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className={`w-full bg-white ${errosCampos.status_financas_id ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
                       <SelectValue placeholder="Selecione um status">
                         {statusFinancas.find(s => String(s.id) === String(formVenda.status_financas_id))?.nome || "Selecione um status"}
                       </SelectValue>
@@ -490,6 +551,7 @@ export default function Venda() {
                       {statusFinancas.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {errosCampos.status_financas_id && <p className="text-sm text-red-600">{errosCampos.status_financas_id}</p>}
                 </div>
               </div>
 
@@ -505,82 +567,92 @@ export default function Venda() {
 
                 <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
                   {itensVenda.map((item, index) => (
-                    <div key={index} className="flex items-end gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                      
-                      <div className="flex-1 space-y-1.5">
-                        <Label className="text-xs">Produto</Label>
-                        <Select
-                          value={item.produto_id ? String(item.produto_id) : ""}
-                          onValueChange={(val) => alterarItem(index, "produto_id", val)}
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-end gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        
+                        <div className="flex-1 space-y-1.5">
+                          <Label className="text-xs">Produto</Label>
+                          <Select
+                            required
+                            value={item.produto_id ? String(item.produto_id) : ""}
+                            onValueChange={(val) => alterarItem(index, "produto_id", val)}
+                          >
+                            <SelectTrigger className={`bg-white ${errosItens[index]?.length ? "border-red-500 focus-visible:ring-red-500" : ""}`}>
+                              <SelectValue placeholder="Escolha um produto">
+                                {item.produto_id 
+                                  ? (() => {
+                                      const p = produtos.find(prod => String(prod.id) === String(item.produto_id));
+                                      return p ? `${p.tipo_produto?.nome} (${p.tipo_unidade_medida?.sigla})` : "Carregando...";
+                                    })()
+                                  : "Escolha um produto"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {produtos.map(p => (
+                                <SelectItem key={p.id} value={String(p.id)}>
+                                  {p.tipo_produto?.nome} ({p.tipo_unidade_medida?.sigla})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="w-[95px] space-y-1.5">
+                          <Label className="text-xs">Quantidade</Label>
+                          <Input
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            required
+                            className={`bg-white ${errosItens[index]?.length ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                            value={item.quantidade}
+                            onChange={(e) => alterarItem(index, "quantidade", e.target.value)}
+                          />
+                        </div>
+
+                        <div className="w-[110px] space-y-1.5">
+                          <Label className="text-xs">Preço Unit. (R$)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            required
+                            className={`bg-white ${errosItens[index]?.length ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                            placeholder="0,00"
+                            value={item.subtotal}
+                            onChange={(e) => alterarItem(index, "subtotal", e.target.value)}
+                          />
+                        </div>
+
+                        <div className="w-[110px] space-y-1.5">
+                          <Label className="text-xs">Subtotal (R$)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            className="bg-slate-100 font-semibold"
+                            readOnly
+                            value={item.valor_total}
+                          />
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => removerItem(index)}
                         >
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Escolha um produto">
-                              {item.produto_id 
-                                ? (() => {
-                                    const p = produtos.find(prod => String(prod.id) === String(item.produto_id));
-                                    return p ? `${p.tipo_produto?.nome} (${p.tipo_unidade_medida?.sigla})` : "Carregando...";
-                                  })()
-                                : "Escolha um produto"}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {produtos.map(p => (
-                              <SelectItem key={p.id} value={String(p.id)}>
-                                {p.tipo_produto?.nome} ({p.tipo_unidade_medida?.sigla})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <Trash2 className="size-4" />
+                        </Button>
                       </div>
-
-                      <div className="w-[95px] space-y-1.5">
-                        <Label className="text-xs">Quantidade</Label>
-                        <Input
-                          type="number"
-                          min="0.001"
-                          step="any"
-                          required
-                          className="bg-white"
-                          value={item.quantidade}
-                          onChange={(e) => alterarItem(index, "quantidade", e.target.value)}
-                        />
-                      </div>
-
-                      <div className="w-[110px] space-y-1.5">
-                        <Label className="text-xs">Preço Unit. (R$)</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          required
-                          className="bg-white"
-                          placeholder="0,00"
-                          value={item.subtotal}
-                          onChange={(e) => alterarItem(index, "subtotal", e.target.value)}
-                        />
-                      </div>
-
-                      <div className="w-[110px] space-y-1.5">
-                        <Label className="text-xs">Subtotal (R$)</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          className="bg-slate-100 font-semibold"
-                          readOnly
-                          value={item.valor_total}
-                        />
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => removerItem(index)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      {errosItens[index]?.length > 0 && (
+                        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                          {errosItens[index].map((mensagem, mensagemIndex) => (
+                            <div key={`${index}-${mensagemIndex}`}>{mensagem}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

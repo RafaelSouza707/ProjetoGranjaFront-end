@@ -38,7 +38,8 @@ export default function Financas() {
   const receitaMes = Number(cardsFinancas.card_receita_total_receitas_mes_granja) || 0
   const despesaMes = Number(cardsFinancas.total_gasto_mes_granja) || 0
   const lucroMes = Number(cardsFinancas.lucro_granja_mes) || 0
-  
+  const card_arrecadado = Number(cardsFinancas.card_arrecadado) || 0
+
 
   const dadosBarra = [
     { nome: "Receitas", valor: receitaMes, cor: "#16a34a" },
@@ -99,8 +100,8 @@ export default function Financas() {
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-sm font-medium text-slate-500">Registro Financeiro</span>
-            <p className={`text-2xl font-bold ${lucroMes >= 0 ? "text-gr/een-600" : "text-red-600"}`}>
-              {formatarMoeda(lucroMes)}
+            <p className={`text-2xl font-bold ${card_arrecadado >= 0 ? "text-gr/een-600" : "text-red-600"}`}>
+              {formatarMoeda(card_arrecadado)}
             </p>
             <span className="text-xs text-slate-400">Histórico financeiro</span>
           </div>
